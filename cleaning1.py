@@ -12,7 +12,7 @@ def change_id(g):
 mydb = mysql.connector.connect(
   host="localhost",
   user="root",
-  password="s@qiekausarali5",
+  password="password here",
   database="fypdata"
 )
 mycursor = mydb.cursor()
