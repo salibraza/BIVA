@@ -1,7 +1,7 @@
 # BIVA-Bussiness Insight and Visualization Assistant
 ### Load Raw transactional data into Database
 1)import transactionsDump.sql in a mysql connection
-it'll create a schema with raw data tables and popullate them with data
+it'll create a schema with raw data tables and popullate them with data 
 **Data source** : *https://data.world/irvinpalacios21/final-data-set-global-sales/workspace/file?filename=Global+Superstore.xls*
 **MySQL is used for all the database creation and management is** 
 ### Create and Popullate Warehouse
