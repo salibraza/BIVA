@@ -125,6 +125,19 @@ inner join sales_fact s on p.product_id = s.product_id
 inner join dateorder_dim d on s.dateOrder_id = d.dateOrder_id
 where p.category_id = (select category_id from category_dim where subcategory = 'Labels')
 group by d.year, d.month
-order by d.year, d.month
+order by d.year, d.month;
 
+
+## Products in same orders
+
+select a.product_name, b.product_name from 
+(select distinct s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id
+where s.customer_id = 'AA-10645' or s.customer_id = 'AA-10375') a 
+inner join 
+(select distinct s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id
+where s.customer_id = 'AA-10645' or s.customer_id = 'AA-10375') b 
+on a.order_id = b.order_id where a.product_name != b.product_name
+order by a.product_name;
 
