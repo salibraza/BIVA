@@ -105,6 +105,7 @@ inner join sales_fact s on p.product_id = s.product_id
 inner join location_dim l on s.location_id = l.location_id
 group by l.market;
 
+select * from location_dim;
 #39
 select b.product_name, b.product_name, b.mname, b.month, b.quantity from 
 (select p.product_id, p.product_name, sum(s.quantity) as quantity from product_dim p 
