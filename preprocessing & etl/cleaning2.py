@@ -26,7 +26,7 @@ mycursor.execute("select distinct product_id from orders;")
 df2 = pd.DataFrame(mycursor.fetchall())
 
 print (df)
-#print ("lolololo")
+#print ("lol")
 print (df2)
 
 # Changing repeating order IDs in the dataframe
