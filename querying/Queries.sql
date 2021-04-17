@@ -442,29 +442,29 @@ order by c.counts desc;
 
 ##____________________________________________________________________________________________
 ## Data Mining Datasets
-select ld.region, ld.country, cd.segment, c.subcategory, sum(quantity)/4 quantity, sum(profit)/4 profit
+select ld.region, ld.country, cd.segment, c.subcategory, pd.product_id, sum(quantity)/4 quantity, sum(profit)/4 profit
 from customer_dim cd inner join sales_fact sf on cd.customer_id = sf.customer_id
 inner join location_dim ld on ld.location_id = sf.location_id
 inner join product_dim pd on pd.product_id = sf.product_id
 inner join category_dim c on c.category_id = pd.category_id
-group by ld.country, cd.segment, c.subcategory
+group by ld.country, cd.segment, c.subcategory, pd.product_id
 order by profit desc;
 
 select min(quantity), avg(quantity), max(quantity), min(profit), avg(profit), max(profit) from 
-(select ld.region, ld.country, cd.segment, c.subcategory, sum(quantity)/4 quantity, sum(profit)/4 profit
+(select ld.region, ld.country, cd.segment, c.subcategory, pd.product_id, sum(quantity)/4 quantity, sum(profit)/4 profit
 from customer_dim cd inner join sales_fact sf on cd.customer_id = sf.customer_id
 inner join location_dim ld on ld.location_id = sf.location_id
 inner join product_dim pd on pd.product_id = sf.product_id
 inner join category_dim c on c.category_id = pd.category_id
-group by ld.country, cd.segment, c.subcategory
+group by ld.country, cd.segment, c.subcategory, pd.product_id
 order by profit desc) a;
 
 ## Classified Results
-select ld.region, ld.country, cd.segment, c.subcategory, 
-if((sum(profit)/4)<0,'F', if((sum(profit)/4)<100,'E',if((sum(profit)/4)<1000,'D',if((sum(profit)/4)<2000,'C',if((sum(profit)/4)<5000,'B','A'))))) profit, 
-if((sum(quantity)/4)>100,'A', if((sum(quantity)/4)>50,'B',if((sum(quantity)/4)>20,'C','D'))) quantity
+select ld.region, ld.country, cd.segment, c.subcategory, pd.product_id, 
+if((sum(profit)/4)<0,'Loss', if((sum(profit)/4)<1000,'GP','HP')) profit, 
+if((sum(quantity)/4)<10,'Low','Good') quantity
 from customer_dim cd inner join sales_fact sf on cd.customer_id = sf.customer_id
 inner join location_dim ld on ld.location_id = sf.location_id
 inner join product_dim pd on pd.product_id = sf.product_id
-inner join category_dim c on c.category_id = pd.category_id
-group by ld.country, cd.segment, c.subcategory;
+inner join category_dim c on c.category_id = pd.category_id 
+group by ld.country, cd.segment, c.subcategory, pd.product_id;

@@ -82,8 +82,102 @@ def home(request):
     df = pd.DataFrame(mycursor.fetchall())
     avg_value = df[0][0] #average customer value
 
+    #### View on bars_________________________________________________________________________________
     #18
+    mycursor.execute("select a.market, round(a.sales, 2) this_month, round(b.sales, 2) prev_month from \
+    (select market, sum(sales) sales from mv_location_time_sales \
+    where year=2014 and month=12 group by market) a \
+    inner join \
+    (select market, sum(sales) sales from mv_location_time_sales \
+    where year=2014 and month=11 group by market) b on a.market = b.market;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1', 2:'2'}) # renaming dataframe columns
+    p = figure(x_range = df['0'], 
+                plot_width=400, 
+                plot_height=400,
+                title="Current and Previous month sales by market", 
+                y_axis_label = "Sales Amount", 
+                tools="box_select,zoom_in,zoom_out,reset", 
+                tooltips=[("Market", "@0"), ("Dec 2014", "@1"), ("Nov 2014", "@2")])
+    p.vbar(x=dodge('0', -0.15, range=p.x_range), 
+            top = '1', # y-axis values column of source
+            width = 0.3, 
+            source = df, 
+            line_color="white", 
+            color = '#3182bd', 
+            fill_alpha = 0.8,
+            legend_label='Dec 2014')
+    p.vbar(x=dodge('0', +0.15, range=p.x_range), 
+            top = '2', # y-axis values column of source
+            width = 0.3, 
+            source = df, 
+            line_color="white", 
+            color = '#e6550d', 
+            fill_alpha = 0.8,
+            legend_label='Nov 2014')
+    p.xaxis.axis_label = "Sales in USD"
+    #p.xaxis.major_label_orientation = 0.9
+    p.x_range.range_padding = 0.05
+    p.y_range.start = 0
+    p.toolbar.logo = None
+    script18, div18 = components(p)
+    #------------------------------------------------------
+    #19
+    mycursor.execute("select cd.category, sum(pj.quantity) quantity from category_dim cd \
+    inner join pj_sales_product_date pj on cd.category_id = pj.category_id \
+    where pj.year = (select max(year) from pj_sales_product_date) \
+    and pj.month = (select max(month) from pj_sales_product_date) \
+    group by cd.category;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1'}) # renaming dataframe columns
+
+    p = figure(x_range = df['0'], 
+                plot_width=300, 
+                plot_height=400,
+                title="Items Sold per Category this Month", 
+                y_axis_label = "Quantity Sold", 
+                x_axis_label = "Category", 
+                tools="box_select,zoom_in,zoom_out,reset", 
+                tooltips=[("Category", "@0"), ("Quantity", "@1")])
+    p.vbar(x=dodge('0', 0, range=p.x_range), 
+            top = '1', # y-axis values column of source
+            width = 0.5, 
+            source = df, 
+            line_color="white", 
+            color = '#3182bd', 
+            fill_alpha = 0.8)
+    p.x_range.range_padding = 0.05
+    p.y_range.start = 0
+    p.toolbar.logo = None
+    script19, div19 = components(p)
+    #------------------------------------------------------
+    #20
     
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #21
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #22
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #23
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #24
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #25
+    #------------------------------------------------------
+    #26
+    #------------------------------------------------------
+    #27
+
 
     first_graph = "Chal Para"
     return HttpResponse(first_graph)
