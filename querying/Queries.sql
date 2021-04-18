@@ -77,7 +77,7 @@ and pj.month = (select max(month) from pj_sales_product_date)
 group by cd.category;
 
 #20
-select total.year, total.total_customers, newc.new_customers from 
+select convert(total.year,char) year, total.total_customers, newc.new_customers from 
 (select b.year, count(*) as total_customers from (
 select distinct dd.year, od.customer_id from order_fact od
 inner join dateorder_dim dd on od.dateOrder_id = dd.dateOrder_id) b
@@ -131,24 +131,25 @@ where year = (select max(year) from pj_sales_customer_date)
 group by month, segment order by month;
 
 #23
-select country, sum(profit) as profit from mv_location_time_sales 
+select country, convert(sum(profit),signed) as profit from mv_location_time_sales 
 where year=2014 and month=12 
 group by country order by profit desc limit 10;
 
 #24
-select product_name, sum(quantity) as quantity from pj_sales_product_date
+select product_name, convert(sum(quantity),signed) as quantity from pj_sales_product_date
 where year = (select max(year) from pj_sales_customer_date)
 and week = (select max(week) from pj_sales_customer_date where 
 			year = (select max(year) from pj_sales_customer_date))
 group by product_id order by quantity desc limit 10;
 
 #25
+select c.*, (c.S2014 - c.S2013) diff from (
 select a.week, sum(a.sales) over(order by week) as S2014, sum(b.sales) over(order by week) as S2013 from 
 (select week, sum(sales) sales
 from mv_location_time_sales where year = 2014 group by week) a 
 inner join 
 (select week, sum(sales) sales
-from mv_location_time_sales where year = 2013 group by week) b on a.week = b.week;
+from mv_location_time_sales where year = 2013 group by week) b on a.week = b.week) c;
 
 ##### Dimension Analysis Reports #####
 ## Category Dimension Report ##
