@@ -22,6 +22,10 @@ mydb = mysql.connector.connect(
     password="1234",
     database="biva"
     )
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9e3eb96b775f71ff538f150aa68198bfbe432fad
 mycursor =  mydb.cursor()
 
 
@@ -68,7 +72,11 @@ def register(request):
 def dashboard(request):
     #### View on Cards_________________________________________________________________________________
     ## 9
+<<<<<<< HEAD
     mycursor.execute("select format(t.sales,2) as today, format(y.sales,2) as yesterday, format((((t.sales-y.sales)/y.sales)*100), 1) difference from \
+=======
+    mycursor.execute("select t.sales as today, y.sales as yesterday, format((((t.sales-y.sales)/y.sales)*100), 1) difference from \
+>>>>>>> 9e3eb96b775f71ff538f150aa68198bfbe432fad
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.date = (select max(date) from dateorder_dim)) as t join \
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
@@ -345,7 +353,11 @@ def home(request):
     p.y_range.start = 0
     p.toolbar.logo = None
     script18, div18 = components(p)
+<<<<<<< HEAD
     #====================================================================================================
+=======
+    #------------------------------------------------------
+>>>>>>> 9e3eb96b775f71ff538f150aa68198bfbe432fad
     #19
     mycursor.execute("select cd.category, sum(pj.quantity) quantity from category_dim cd \
     inner join pj_sales_product_date pj on cd.category_id = pj.category_id \
@@ -374,6 +386,7 @@ def home(request):
     p.y_range.start = 0
     p.toolbar.logo = None
     script19, div19 = components(p)
+<<<<<<< HEAD
     #====================================================================================================
     #20
     mycursor.execute("select convert(total.year,char) year, total.total_customers, newc.new_customers from \
@@ -605,6 +618,39 @@ def home(request):
                                         'script20':script20, 'div20':div20, 'script21':script21, 'div21':div21, 
                                         'script22':script22, 'div22':div22, 'script23':script23, 'div23':div23, 
                                         'script24':script24, 'div24':div24, 'script25':script25, 'div25':div25})
+=======
+    #------------------------------------------------------
+    #20
+    
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #21
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #22
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #23
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #24
+
+    script20, div20 = components(p)
+    #------------------------------------------------------
+    #25
+    #------------------------------------------------------
+    #26
+    #------------------------------------------------------
+    #27
+
+
+    # first_graph = "Chal Para"
+    return render(request, 'home.html', {'script18':script18, 'div18':div18, 'script19':script19, 'div19':div19})
+>>>>>>> 9e3eb96b775f71ff538f150aa68198bfbe432fad
 
 
 
