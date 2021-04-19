@@ -1,10 +1,9 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
-
+from .models import Cards
 from bokeh.plotting import figure, from_networkx
 from bokeh.embed import components
-
 from bokeh.layouts import column, row, gridplot
 from bokeh.palettes import Category20c, Spectral10, Spectral4
 from bokeh.transform import cumsum, factor_cmap, dodge
@@ -67,17 +66,17 @@ def register(request):
     return render(request,'signup.html')
 
 def dashboard(request):
+    
     #### View on Cards_________________________________________________________________________________
     ## 9
-    mycursor.execute("select t.sales as today, y.sales as yesterday, format((((t.sales-y.sales)/y.sales)*100), 1) difference from \
+    mycursor.execute("select t.sales as today, y.sales as yesterday, format((((y.sales-t.sales)/y.sales)*100), 1) difference from \
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.date = (select max(date) from dateorder_dim)) as t join \
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.date = (select max(date)-1 from dateorder_dim)) as y;")
     df = pd.DataFrame(mycursor.fetchall())
-    today = df[0][0] #sales
-    yesterday = df[1][0]
-    percentage_diff = df[2][0]
+    dashcard1 = Cards()
+    dashcard1.assign("Daily",df[0][0],df[1][0],df[2][0])
 
     ## 10
     mycursor.execute("select format(t.sales,2) as this_week, format(y.sales,2) as prev_week, format((((t.sales-y.sales)/y.sales)*100),2) difference from \
@@ -86,9 +85,11 @@ def dashboard(request):
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.year = (select max(year) from dateorder_dim) and d.week = 51) as y;")
     df = pd.DataFrame(mycursor.fetchall())
-    this_week = df[0][0] #sales
-    prev_week = df[1][0]
-    percentage_diff = df[2][0]
+    # this_week = df[0][0] #sales
+    # prev_week = df[1][0]
+    # percentage_diff = df[2][0]
+    dashcard2 = Cards()
+    dashcard2.assign("Weekly",df[0][0],df[1][0],df[2][0])
 
     ## 11
     mycursor.execute("select format(t.sales,2) as this_month, format(y.sales,2) as prev_month, format((((t.sales-y.sales)/y.sales)*100),2) difference from \
@@ -97,34 +98,45 @@ def dashboard(request):
     (select sum(s.sales) sales from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.year = 2014 and d.month = 11) as y;")
     df = pd.DataFrame(mycursor.fetchall())
-    this_month = df[0][0] #sales
-    prev_month = df[1][0]
-    percentage_diff = df[2][0]
+    # this_month = df[0][0] #sales
+    # prev_month = df[1][0]
+    # percentage_diff = df[2][0]
+    dashcard3 = Cards()
+    dashcard3.assign("Monthly",df[0][0],df[1][0],df[2][0])
 
     ## 12, 13, 14
     mycursor.execute("select format(sum(s.profit),2) profit, format(sum(s.discount),2) discount, format(sum(s.shipping_cost),2) shipping \
     from sales_fact s inner join dateorder_dim d on d.dateOrder_id = s.dateOrder_id \
     where d.year = 2014 and d.week = 52;")
     df = pd.DataFrame(mycursor.fetchall())
-    week_profit = df[0][0] #this week
-    week_discount = df[1][0]
-    week_shipping = df[2][0]
+    # week_profit = df[0][0] #this week
+    # week_discount = df[1][0]
+    # week_shipping = df[2][0]
+    dashcard4 = Cards()
+    dashcard4.assign("Weekly Stats",df[0][0],df[1][0],df[2][0]) 
 
     ## 
+    dashcard5 = Cards()
+    dashcard5.type = "Average Stats"
     #15
     mycursor.execute("select format(avg(sales),2) from sales_fact;")
     df = pd.DataFrame(mycursor.fetchall())
-    avg_transaction = df[0][0] #avg transaction size
+    # avg_transaction = df[0][0] #avg transaction size
+    dashcard5.now = df[0][0] # average transaction size
 
     #16
     mycursor.execute("select format(avg(sales),2) from order_fact;")
     df = pd.DataFrame(mycursor.fetchall())
-    avg_order = df[0][0] #average order size
+    # avg_order = df[0][0] #average order size
+    dashcard5.previous = df[0][0] # average order size
+
 
     #17
     mycursor.execute("select format(avg(sales),2) from mv_customer_sales;")
     df = pd.DataFrame(mycursor.fetchall())
-    avg_value = df[0][0] #average customer value
+    # avg_value = df[0][0] #average customer value
+    dashcard5.percentage = df[0][0] # average customer value
+
 
     #### View on bars_________________________________________________________________________________
     #18
@@ -224,8 +236,11 @@ def dashboard(request):
 
 
 
-
-
+    #********************************************#
+    # dashcards1 = Cards()
+    dashcards1 = [dashcard1,dashcard2,dashcard3]
+    dashcards2 = [dashcard4,dashcard5]
+    
     #***************************************************#
     if (request.method == 'POST' ):
         username =  request.POST['username']
@@ -233,15 +248,29 @@ def dashboard(request):
         user = auth.authenticate(username = username,password = password)
         if user is not None:
             auth.login(request,user)
-            return render(request,'dashboard.html')
+            return render(request,'dashboard.html',
+            {'script18':script18, 'div18':div18, 'script19':script19, 'div19':div19,
+            'dashcards1': dashcards1, 'dashcards2':dashcards2,
+            'name':"BIVA",'dashboard': True}
+            )
         else:
             messages.info(request,'Invalid credentials')
             return redirect('/')
     else:
-        return render(request,'dashboard.html')
+        return render(request,'dashboard.html',
+         {'script18':script18, 'div18':div18, 'script19':script19, 'div19':div19,
+         'dashcards1': dashcards1, 'dashcards2' : dashcards2,
+         'name':"Dashbobard",'dashboard': True}
+         )
 
 def decision(request):
-    return render(request,'decision.html')
+    return render(request,'decision.html',{'name':"Decision Support",'decision' : True,})
+def explore(request):
+    return render(request,'decision.html',{'name':"Explore",'explore' : True,})
+def graph(request):
+    return render(request,'decision.html',{'name':"Graph",'graph' : True,})
+def customQuery(request):
+    return render(request,'decision.html',{'name':"Custom Query",'query' : True,})
 
 
 #additional files 
@@ -434,6 +463,6 @@ def returns(request):
     first_graph = "Returns Data"
     return HttpResponse(first_graph)
 
-def graph(request):
-    first_graph = "Network Graph"
-    return HttpResponse(first_graph)
+# def graph(request):
+#     first_graph = "Network Graph"
+#     return HttpResponse(first_graph)
