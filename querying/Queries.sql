@@ -422,11 +422,32 @@ where product1 = 'Staples' and counts>1;
 
 ## Product combinations that were sold more than 1 times together
 ## and their combined profit (profit is negative if any discount was offered)
-select p.product1, p.product2, c.counts, p.profit from 
-(select a.product_name product1, b.product_name product2, (a.profit + b.profit) profit 
-from (select s.order_id, p.product_name, profit from sales_fact s 
+select p.product1, p.product2, c.counts, p.sales, p.profit, p.quantity1, p.quantity2 from 
+(select a.product_name product1, b.product_name product2, sum((a.sales + b.sales)) sales, sum(a.quantity) quantity1, sum(b.quantity) quantity2, sum((a.profit + b.profit)) profit 
+from (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
 inner join product_dim p on s.product_id = p.product_id) a 
-inner join (select s.order_id, p.product_name, profit from sales_fact s 
+inner join (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) p
+inner join
+(select a.product_name product1, b.product_name product2, count(*) counts 
+from (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2 
+where c.counts > 1
+order by c.counts desc;
+
+## Products that were sold with Product X more than one time
+## and their combined profit
+select p.product1, p.product2, c.counts, p.sales, p.profit, p.quantity1, p.quantity2 from 
+(select a.product_name product1, b.product_name product2, sum((a.sales + b.sales)) sales, sum(a.quantity) quantity1, sum(b.quantity) quantity2, sum((a.profit + b.profit)) profit 
+from (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
 inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
 where a.product_name != b.product_name
 group by a.product_name, b.product_name) p
@@ -438,8 +459,15 @@ inner join (select s.order_id, p.product_name from sales_fact s
 inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
 where a.product_name != b.product_name
 group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2
-where c.counts > 1
+where c.counts > 1 and p.product1 = 'Staples'
 order by c.counts desc;
+
+## using the materialized view
+select * from mv_product_association
+                  where counts > 1 and product1 = 'Staples';
+select * from mv_product_association where product1 = 'Staples' and counts>1 
+order by counts desc;
+select * from mv_product_association where counts>1 order by counts desc;
 
 ##____________________________________________________________________________________________
 ## Data Mining Datasets

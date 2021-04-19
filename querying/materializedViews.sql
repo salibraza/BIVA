@@ -66,3 +66,21 @@ inner join dateorder_dim dd on sf.dateOrder_id = dd.dateOrder_id
 inner join product_dim pd on sf.product_id = pd.product_id
 inner join category_dim cd on cd.category_id = pd.category_id;
 
+## Product Association View
+create table mv_product_association 
+select p.product1, p.product2, c.counts, p.sales, p.profit, p.quantity1, p.quantity2 from 
+(select a.product_name product1, b.product_name product2, sum((a.sales + b.sales)) sales, sum(a.quantity) quantity1, sum(b.quantity) quantity2, sum((a.profit + b.profit)) profit 
+from (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) p
+inner join
+(select a.product_name product1, b.product_name product2, count(*) counts 
+from (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2;
