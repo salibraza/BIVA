@@ -176,29 +176,29 @@ group by category, week
 order by category, week) c on c.week = b.week;
 
 #27
-select category, year, sum(sales) sales, sum(profit) revenue from pj_sales_category_date
+select category, year, format(sum(sales),2) sales, format(sum(profit),2) revenue from pj_sales_category_date
 group by category, year
 order by category, year;
 #28
-select a.*, b.sales_prev, (((a.sales_now-b.sales_prev)/b.sales_prev)*100) percent_diff from
-(select category, sum(sales) sales_now from pj_sales_category_date pj
+select a.*, b.sales_prev, format((((a.sales_now-b.sales_prev)/b.sales_prev)*100),2) percent_diff from
+(select category, format(sum(sales),2) sales_now from pj_sales_category_date pj
 where year = 2014 and pj.month = 12 group by category) a
 inner join
-(select category, sum(sales) sales_prev from pj_sales_category_date pj
+(select category, format(sum(sales),2) sales_prev from pj_sales_category_date pj
 where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;
 
-select a.*, b.profit_prev, (((a.profit_now-b.profit_prev)/b.profit_prev)*100) percent_diff from
-(select category, sum(profit) profit_now from pj_sales_category_date pj
+select a.*, b.profit_prev, format((((a.profit_now-b.profit_prev)/b.profit_prev)*100),2) percent_diff from
+(select category, format(sum(profit),2) profit_now from pj_sales_category_date pj
 where year = 2014 and pj.month = 12 group by category) a
 inner join
-(select category, sum(profit) profit_prev from pj_sales_category_date pj
+(select category, format(sum(profit),2) profit_prev from pj_sales_category_date pj
 where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;
 
 #29
-select category, sum(sales) this_quarter_sales from pj_sales_category_date
+select category, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date
 where year = 2014 and quarter = 4 group by category;
 #30
-select category, subcategory, sum(sales) this_quarter_sales from pj_sales_category_date
+select concat(concat(category, ', '), subcategory)subcategory, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date
 where year = 2014 and quarter = 4 group by category, subcategory;
 #31
 select category, sum(quantity) units_sold_this_month from pj_sales_category_date
