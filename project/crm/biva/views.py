@@ -1,12 +1,9 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.contrib.auth.models import User,auth
-<<<<<<< HEAD
 
 import networkx as nx
-=======
 from .models import Cards
->>>>>>> 51b673a57fa3da3895714f7fb1ec8fc0805e9fb3
 from bokeh.plotting import figure, from_networkx
 from bokeh.embed import components
 from bokeh.layouts import column, row, gridplot
@@ -157,7 +154,7 @@ def dashboard(request):
                 plot_height=400,
                 title="Current and Previous month sales by market", 
                 y_axis_label = "Sales Amount", 
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,tap,save,reset", 
                 tooltips=[("Market", "@0"), ("Dec 2014", "@1"), ("Nov 2014", "@2")])
     p.vbar(x=dodge('0', -0.15, range=p.x_range), 
             top = '1', # y-axis values column of source
@@ -197,7 +194,7 @@ def dashboard(request):
                 title="Items Sold per Category this Month", 
                 y_axis_label = "Quantity Sold", 
                 x_axis_label = "Category", 
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,tap,save,reset", 
                 tooltips=[("Category", "@0"), ("Quantity", "@1")])
     p.vbar(x=dodge('0', 0, range=p.x_range), 
             top = '1', # y-axis values column of source
@@ -255,7 +252,7 @@ def dashboard(request):
                 title="Total and New Customers Every Year", 
                 y_axis_label = "Customers", 
                 x_axis_label = "Years",
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,tap,save,reset", 
                 tooltips=[("Year", "@0"), ("Total Customers", "@1"), ("New Customers", "@2")])
     p.vbar(x=dodge('0', -0.15, range=p.x_range), 
             top = '1', # y-axis values column of source
@@ -300,7 +297,7 @@ def dashboard(request):
                 title="Percentage of Total Orders Returned this Year", 
                 y_axis_label = "% Returns", 
                 x_axis_label = "Months", 
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,tap,save,reset", 
                 tooltips=[("Month", "@0"), ("% return", "@1")])
     p.vbar(x=dodge('0', 0, range=p.x_range), 
             top = '1', # y-axis values column of source
@@ -332,7 +329,7 @@ def dashboard(request):
                 y_axis_label = "Sales (x 100,000 USD)", 
                 title="Total Monthly sales of Customer Segments", 
                 x_range=group, 
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,tap,save,reset", 
                 tooltips=[("segment_month: ", "@segment_month"), ("sales: ", "@sales_top")])
 
     p.vbar(x='segment_month', 
@@ -362,7 +359,7 @@ def dashboard(request):
     p = figure(plot_height=400,
                 plot_width=450,
                 title="10 Most Profitable Countries this Month",
-                tools="hover", 
+                tools="hover,tap,reset,save", 
                 tooltips=[("Country", "@0"), ("Profit this Month", "@1")], 
                 x_range=(-0.5, 1.0))
     p.wedge(x=0, y=1, 
@@ -396,7 +393,7 @@ def dashboard(request):
     p = figure(plot_height=400,
                 plot_width=650,
                 title="10 Most Sold Products this Week",
-                tools="hover", 
+                tools="hover,save,tap,reset", 
                 tooltips=[("Product", "@0"), ("Units Sold", "@1")], 
                 x_range=(-0.5, 1.0))
     p.wedge(x=-0.15, y=1, 
@@ -429,7 +426,7 @@ def dashboard(request):
     p = figure(plot_width=900, plot_height=400, title="Weekly Sales Comparison(This year vs Prev Year)", 
                 y_axis_label = "Sales (in Million USD)", 
                 x_axis_label = "Week Number",
-                tools="box_select,zoom_in,zoom_out,reset", 
+                tools="box_select,zoom_in,zoom_out,save,reset", 
                 tooltips=[("Week: ", "@week"), ("2014: ", "@2014"), ("2013: ", "@2013"), ("Difference: ", "@diff")])
 
     # add a line renderer
@@ -852,16 +849,281 @@ def home(request):
 
 
 def category(request):
-    mycursor = mydb.cursor()
-    
-    #Pie chart to show all regions and measuring country instances in them
-    mycursor.execute("select region, count(*) from (select distinct region, country from location_dim) a group by a.region;")
+    ## GENERAL STATS OF CATEGORY DIMENSION
+    # 26
+    mycursor.execute("select a.week, sum(a.sales) over(order by week) as Technology, \
+    sum(b.sales) over(order by week) as Office_Supplies, \
+    sum(c.sales) over(order by week) as Furniture from \
+    (select category, week, sum(sales) sales from pj_sales_category_date \
+    where year = (select max(year) from pj_sales_category_date) \
+    and category = 'Technology' \
+    group by category, week \
+    order by category, week) a \
+    inner join \
+    (select category, week, sum(sales) sales from pj_sales_category_date \
+    where year = (select max(year) from pj_sales_category_date) \
+    and category = 'Office Supplies' \
+    group by category, week \
+    order by category, week) b on a.week = b.week \
+    inner join \
+    (select category, week, sum(sales) sales from pj_sales_category_date \
+    where year = (select max(year) from pj_sales_category_date) \
+    and category = 'Furniture' \
+    group by category, week \
+    order by category, week) c on c.week = b.week;") 
     df = pd.DataFrame(mycursor.fetchall())
-    df = df.rename(columns = {0:'region', 1:'count'})
+    df = df.rename(columns = {0:'week', 1:'1', 2:'2', 3:'3'})
 
-    
-    script, div = components(plot)
-    return render(request, 'category.html', {'script':script, 'div':div, 'script2':script, 'div2':div})
+    sc = ColumnDataSource(df)
+    p = figure(plot_width=900, plot_height=400, title="Weekly Commulative Sales Of All Categories This Year", 
+                y_axis_label = "Sales (in Million USD)", 
+                x_axis_label = "Week Number",
+                tools="box_select,zoom_in,zoom_out,save,reset", 
+                tooltips=[("Week", "@week"), ("Technology", "@1"), ("Office Supplies", "@2"), ("Furniture", "@3")])
+
+    # add a line renderer
+    p.line('week', '1', source = df, line_width=3, color = Spectral4[0], legend_label='Technology')
+    p.line('week', '2', source = df, line_width=3, color = Spectral4[1], legend_label='Office Supplies')
+    p.line('week', '3', source = df, line_width=3, color = Spectral4[2], legend_label='Furniture') 
+    p.legend.location = "top_left"
+    p.toolbar.logo = None
+    script26, div26 = components(p)
+    #====================================================================================================
+    # 27
+    mycursor.execute("select category, year, format(sum(sales),2) sales, format(sum(profit),2) revenue from pj_sales_category_date \
+    group by category, year \
+    order by category, year;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1', 2:'2', 3:'3'})
+    # Furniture sales and profit for all years
+    f_2011_sales = df.at[0,'2']
+    f_2011_profit = df.at[0,'3']
+    f_2012_sales = df.at[1,'2']
+    f_2012_profit = df.at[1,'3']
+    f_2013_sales = df.at[2,'2']
+    f_2013_profit = df.at[2,'3']
+    f_2014_sales = df.at[3,'2']
+    f_2014_profit = df.at[3,'3']
+
+    # Office Supplies' sales and profit for all years
+    o_2011_sales = df.at[4,'2']
+    o_2011_profit = df.at[4,'3']
+    o_2012_sales = df.at[5,'2']
+    o_2012_profit = df.at[5,'3']
+    o_2013_sales = df.at[6,'2']
+    o_2013_profit = df.at[6,'3']
+    o_2014_sales = df.at[7,'2']
+    o_2014_profit = df.at[7,'3']
+
+    # Technology sales and profit for all years
+    t_2011_sales = df.at[8,'2']
+    t_2011_profit = df.at[8,'3']
+    t_2012_sales = df.at[9,'2']
+    t_2012_profit = df.at[9,'3']
+    t_2013_sales = df.at[10,'2']
+    t_2013_profit = df.at[10,'3']
+    t_2014_sales = df.at[11,'2']
+    t_2014_profit = df.at[11,'3']
+    #====================================================================================================
+    # 28
+    mycursor.execute("select a.*, b.sales_prev, format((((a.sales_now-b.sales_prev)/b.sales_prev)*100),2) percent_diff from \
+    (select category, format(sum(sales),2) sales_now from pj_sales_category_date pj \
+    where year = 2014 and pj.month = 12 group by category) a \
+    inner join \
+    (select category, format(sum(sales),2) sales_prev from pj_sales_category_date pj \
+    where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1', 2:'2', 3:'3'})
+    # Sales in current month vs previous month 
+    # Furniture
+    f_sale_now = df.at[0,'1']
+    f_sale_prev = df.at[0,'2']
+    f_sale_diff = df.at[0,'3']
+
+    # Office Supplies
+    o_sale_now = df.at[1,'1']
+    o_sale_prev = df.at[1,'2']
+    o_sale_diff = df.at[1,'3']
+
+    # Technology
+    t_sale_now = df.at[2,'1']
+    t_sale_prev = df.at[2,'2']
+    t_sale_diff = df.at[2,'3']
+
+    mycursor.execute("select a.*, b.profit_prev, format((((a.profit_now-b.profit_prev)/b.profit_prev)*100),2) percent_diff from \
+    (select category, format(sum(profit),2) profit_now from pj_sales_category_date pj \
+    where year = 2014 and pj.month = 12 group by category) a \
+    inner join \
+    (select category, format(sum(profit),2) profit_prev from pj_sales_category_date pj \
+    where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1', 2:'2', 3:'3'})
+    # Profit in current month vs previous month
+    # Furniture
+    f_prof_now = df.at[0,'1']
+    f_prof_prev = df.at[0,'2']
+    f_prof_diff = df.at[0,'3']
+
+    # Office Supplies
+    o_prof_now = df.at[1,'1']
+    o_prof_prev = df.at[1,'2']
+    o_prof_diff = df.at[1,'3']
+
+    # Technology
+    t_prof_now = df.at[2,'1']
+    t_prof_prev = df.at[2,'2']
+    t_prof_diff = df.at[2,'3']
+    #====================================================================================================
+    # 29
+    mycursor.execute("select category, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date \
+    where year = 2014 and quarter = 4 group by category;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1'})
+
+    df['angle'] = df['1']/df['1'].sum() *2* pi
+    df['color'] = Category20c[len(df)]
+
+    p = figure(plot_height=400,
+                plot_width=400,
+                title="Category Wise Sales In Current Quarter",
+                tools="hover,save,tap,reset",
+                tooltips=[("Category", "@0"), ("Sales Amount", "@1")], 
+                x_range=(-0.5, 1.0))
+    p.wedge(x=-0.05, y=1, 
+            radius=0.4, 
+            start_angle=cumsum('angle', include_zero=True), 
+            end_angle=cumsum('angle'),
+            line_color="white", 
+            fill_color='color', 
+            legend_field='0', 
+            source=df)
+    p.axis.axis_label=None
+    p.axis.visible=False
+    p.grid.grid_line_color = None
+    p.toolbar.logo = None
+    script29, div29 = components(p)
+    #====================================================================================================
+    # 30
+    mycursor.execute("select concat(concat(category, ', '), subcategory)subcategory, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date \
+    where year = 2014 and quarter = 4 group by category, subcategory;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1'})
+
+    df['angle'] = df['1']/df['1'].sum() *2* pi
+    df['color'] = Category20c[len(df)]
+
+    p = figure(plot_height=400,
+                plot_width=600,
+                title="Subcategory Wise Sales In Current Quarter",
+                tools="hover,save,tap,reset", 
+                tooltips=[("Subcategory", "@0"), ("Sales Amount", "@1")], 
+                x_range=(-0.5, 1.0))
+    p.wedge(x=-0.05, y=1, 
+            radius=0.4, 
+            start_angle=cumsum('angle', include_zero=True), 
+            end_angle=cumsum('angle'),
+            line_color="white", 
+            fill_color='color', 
+            legend_field='0', 
+            source=df)
+    p.axis.axis_label=None
+    p.axis.visible=False
+    p.grid.grid_line_color = None
+    p.toolbar.logo = None
+    script30, div30 = components(p)
+    #====================================================================================================
+    # 31
+    mycursor.execute("select category, sum(quantity) units_sold_this_month from pj_sales_category_date \
+    where year = 2014 and month = 12 group by category;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1'}) # renaming dataframe columns
+
+    p = figure(x_range = df['0'], 
+                plot_width=300, 
+                plot_height=400,
+                title="Quantity of Items Sold this Month", 
+                y_axis_label = "Quantity Sold", 
+                x_axis_label = "Category", 
+                tools="tap,box_select,save,reset", 
+                tooltips=[("Category", "@0"), ("Quantity", "@1")])
+    p.vbar(x=dodge('0', 0, range=p.x_range), 
+            top = '1', # y-axis values column of source
+            width = 0.5, 
+            source = df, 
+            line_color="white", 
+            color = '#3182bd', 
+            fill_alpha = 0.9)
+    p.x_range.range_padding = 0.05
+    p.y_range.start = 0
+    p.toolbar.logo = None
+    script31, div31 = components(p)
+    #====================================================================================================
+    # 32
+    mycursor.execute("select c.subcategory, sum(s.quantity) quantity from \
+    category_dim c inner join product_dim p on c.category_id = p.category_id \
+    inner join sales_fact s on p.product_id = s.product_id \
+    inner join dateorder_dim d on s.dateOrder_id = d.dateOrder_id \
+    where d.year = 2014 and d.month = 12 \
+    group by c.category_id order by c.category_id;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'0', 1:'1'}) # renaming dataframe columns
+
+    p = figure(x_range = df['0'], 
+                plot_height=400,
+                plot_width=500,
+                title="Quantity of Items Sold This Month", 
+                y_axis_label = "Quantity Sold", 
+                x_axis_label = "Subcategories", 
+                tools="tap,box_select,save,reset,hover", 
+                tooltips=[("Subcategory", "@0"), ("Quantity", "@1")])
+
+    p.vbar(x = '0', 
+            top = '1', 
+            width = 1.0, 
+            source = df, 
+            line_color="white", 
+            color = '#3182bd')
+    p.xaxis.major_label_orientation = 0.9
+    p.x_range.range_padding = 0.05
+    p.toolbar.logo = None
+    script32, div32 = components(p)
+    #====================================================================================================
+    #33
+    mycursor.execute("select c.category, c.subcategory, sum(sales) sales from category_dim c inner join mv_product_sales m on c.category_id = m.category_id group by c.category, c.subcategory;")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'category', 1:'subcategory', 2: 'sales'})
+
+    group = df.groupby(by=['category', 'subcategory'])
+
+    index_cmap = factor_cmap('category_subcategory', palette=Spectral10, factors=sorted(df.category.unique()), end=1)
+
+    p = figure(plot_width=700, 
+                plot_height=400, 
+                title="Total Sales of Subcategories", 
+                x_axis_label = "Subcategories in Categories",
+                y_axis_label = "Sales (in Million USD)", 
+                x_range=group, 
+                tools="tap,box_select,save,reset,hover", 
+                tooltips=[("Category_SubCategory: ", "@category_subcategory"), ("sales: ", "@sales_top")])
+
+    p.vbar(x='category_subcategory', 
+            top='sales_top', width=1, 
+            source=group, 
+            line_color="white", 
+            fill_color=index_cmap)
+
+    p.y_range.start = 0
+    p.x_range.range_padding = 0.05
+    p.xgrid.grid_line_color = None
+    p.xaxis.major_label_orientation = 1.0
+    p.outline_line_color = 'black'
+    p.toolbar.logo = None
+    script33, div33 = components(p)
+    #====================================================================================================
+
+    return render(request, 'category.html', {'script26':script26, 'div26':div26, 'script29':script29, 'div29':div29, 
+                                                'script30':script30, 'div30':div30, 'script31':script31, 'div31':div31, 
+                                                'script32':script32, 'div32':div32, 'script33':script33, 'div33':div33})
 
 
 def product(request):
@@ -876,15 +1138,19 @@ def returns(request):
     first_graph = "Returns Data"
     return HttpResponse(first_graph)
 
-<<<<<<< HEAD
 def graph(request):
     
     ## NETWORK GRAPH VISUALIZATION OF PRODUCT ASSOCIATIONS
     # Input Variables
+    mycursor.execute("Select distinct product1 from mv_product_association;")
+    df2 = pd.DataFrame(mycursor.fetchall())
+    df2 = df2.rename(columns = {0:'p1'})
+    product_list = df2['p1'].tolist() #list having product names (3742 products)
+    
     labelnodes = True
-    productname = 'Staples'
-    productname2 = ''
-    counts = '1'
+    productname = 'Staples'     # can have any value from product_list, '' is no prodcut selected
+    productname2 = ''           # can have any value from product_list, '' is no prodcut selected
+    counts = '1'                # can have values 0,1,2,3,4
 
     # IF the input is: 1) no product specified. 2) one product specified. 3) two products specified 
     if productname == '' and productname2 == '':
@@ -970,8 +1236,3 @@ def graph(request):
     graphscript, graphdiv = components(p)
 
     return render(request, 'graph.html', {'graphscript':graphscript, 'graphdiv':graphdiv})
-=======
-# def graph(request):
-#     first_graph = "Network Graph"
-#     return HttpResponse(first_graph)
->>>>>>> 51b673a57fa3da3895714f7fb1ec8fc0805e9fb3
