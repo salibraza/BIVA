@@ -3,12 +3,12 @@
         {% comment %} First Row  {% endcomment %}
             <div class="row">
               {%for dashcard in dashcards1%}
-              <div class="col-sm-4 col-sm-4 col-sm-4">
-                <div class="card card-stats bg-secondary text-white">
+              <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
                   <div class="card-header ">
                     <p class="card-category"><span class = "text-white">{{dashcard.type}} Sales</span></p>
-                    <h3 class="card-title">{{dashcard.now}} $</h3>
-                    <h3 class="card-title">{{dashcard.previous}} $ </h3>
+                    <h3 class="card-title text-white">{{dashcard.now}} $</h3>
+                    <h3 class="card-title text-white">{{dashcard.previous}} $ </h3>
                   </div>
                   <div class="card-footer">
                     <div class="stats">
@@ -26,30 +26,85 @@
               {% endfor %}
           </div>
         {% comment %} first row ended {% endcomment %}
-          <div class="row">
-              {%for dashcard in dashcards2%}
+         <div class = "row d-flex justify-content-center">
+                {{divlist.3| safe }}
+                {{scriptlist.3| safe}}
+          </div>
+        {% comment %} Secound Row Ended Yearly sales line Graph comparison {% endcomment %}
+           <div class="row">
               <div class="col-md-6 col-md-6">
-                <div class="card card-stats bg-info">
-                  <div class="card-header">
-                    {% comment %} <p class="card-category">{{dashcard.type}} Sales</p> {% endcomment %}
-                    <h3 class="card-title">This week average {{dashcard.now}} $</h3>
-                    <h3 class="card-title">{{dashcard.previous}} $ </h3>
-                    <h3 class="card-title">{{dashcard.percentage}} $ </h3>
+                <div class="card card-stats " style = " background-color: #F29722;">
+                  <div class="card-header ">
+                   <p class="card-category"><span class = "text-white">Current Week </span></p>
+                   <h3 class="card-title text-white">Total Profit: {{dashcards2.0.now}} $</h3>
+                   <h3 class="card-text text-white">Total Discount: {{dashcards2.0.previous}} $ </h3>
+                   <h3 class="card-text text-white">Total Shipping Cost: {{dashcards2.0.percentage}} $ </h3>
                   </div>
                 </div>
               </div>
-              {% endfor %}
+              
+              <div class="col-md-6 col-md-6">
+                <div class="card card-stats " style = " background-color: #F29722;">
+                  <div class="card-header ">
+                  <p class="card-category"><span class = "text-white">All-Time</span></p>
+                   <h3 class="card-title text-white">Average Transaction Sales: {{dashcards2.1.now}}$</h3>
+                   <h3 class="card-text text-white">Average Order Sale: {{dashcards2.1.previous}} $ </h3>
+                   <h3 class="card-text text-white">Average Customer Value: {{dashcards2.1.percentage}} $ </h3>
+                  </div>
+                </div>
+              </div>
           </div>
-
-        {% comment %} Secound Row Ended {% endcomment %}
-          <div class='row'>
-                {{div18| safe }}
-                {{script18| safe}} 
-                <div style="width: 100px; height: 100px;"></div>
-                {{div19| safe }}
-                {{script19| safe}} 
+          {% comment %} Third row ended two cards AVG + Weekly Sales   {% endcomment %}
+          <div class='row '>
+            <div class="col-md-6 col-md-6">
+              <div class="card card-content" >
+                {{divlist.0| safe }}
+                {{scriptlist.0| safe}} 
+              </div>
+            </div>
+            <div class="col-md-6 col-md-6">
+              <div class="card card-content">
+                {{divlist.2| safe }}
+                {{scriptlist.2| safe}} 
+              </div>
+            </div>
+          <br>
+          {% comment %} Forth row ended two Graphs {% endcomment %}
+          <div class='row '>
+            <div class="col-md-8 col-md-8 ml-3">
+              <div class="card card-content">
+                {{divlist.4| safe }}
+                {{scriptlist.4| safe}} 
+              </div>
+            </div>
+            <div class="col-sm-3 col-sm-3 ml-3">
+              <div class="card card-content">
+                {{divlist.1| safe }}
+                {{scriptlist.1| safe}} 
+              </div>
+            </div>
           </div>
-          
+          {% comment %} Fifth row ended Pie chart and graph {% endcomment %}
+          <div class = "row d-flex justify-content-center ml-5">
+                {{divlist.5| safe }}
+                {{scriptlist.5| safe}}
+          </div>
+          {% comment %} Sixth row ended {% endcomment %}
+          <div class='row '>
+            <div class="col-md-6 col-md-6 ml-3">
+              <div class="card card-content">
+                {{divlist.7| safe }}
+                {{scriptlist.7| safe}} 
+              </div>
+            </div>
+            <div class="col-sm-4 col-sm-4 ml-3">
+              <div class="card card-content">
+                {{divlist.6| safe }}
+                {{scriptlist.6| safe}} 
+              </div>
+            </div>
+          </div>
+        
 
      
       
