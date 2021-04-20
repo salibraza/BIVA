@@ -14,6 +14,7 @@ from math import pi
 import mysql.connector
 import pandas as pd
 
+
 #sql connector
 mydb = mysql.connector.connect(
     host="localhost",
@@ -32,6 +33,25 @@ def index(request): #Login page
 def logout(request): 
     auth.logout(request)
     return redirect('/')
+
+# def login(request):
+#     if (request.method == 'POST' ):
+#         username =  request.POST['username']
+#         password = request.POST['password']
+#         user = auth.authenticate(username = username,password = password)
+#         if user is not None:
+#             auth.login(request,user)
+#             return redirect('dashboard.html',
+#             {'scriptlist':scriptlist, 'divlist':divlist,
+#             'dashcards1': dashcards1, 'dashcards2':dashcards2,
+#             'name':"BIVA",'dashboard': True}
+#             )
+#         else:
+#             messages.info(request,'Invalid credentials')
+#             return redirect('/')
+#     else:
+#         return redirect('/')
+    
 def register(request):
     if request.method == 'POST':
         firstname = request.POST['firstname']
@@ -62,6 +82,7 @@ def register(request):
             return render(request,'signup.html')
     messages.info(request,'Register a new user')
     return render(request,'signup.html')
+
 
 def dashboard(request):
     

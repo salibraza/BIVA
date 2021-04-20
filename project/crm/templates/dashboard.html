@@ -2,28 +2,70 @@
 {% block content %}
         {% comment %} First Row  {% endcomment %}
             <div class="row">
-              {%for dashcard in dashcards1%}
+              
               <div class="col-sm-4 col-sm-4 col-sm-4 ">
                 <div class="card card-stats text-white" style = " background-color: #03497D;">
                   <div class="card-header ">
-                    <p class="card-category"><span class = "text-white">{{dashcard.type}} Sales</span></p>
-                    <h3 class="card-title text-white">{{dashcard.now}} $</h3>
-                    <h3 class="card-title text-white">{{dashcard.previous}} $ </h3>
+                    <p class="card-category"><span class = "text-white">{{dashcards1.0.type}} Sales</span></p>
+                    <h4 class="card-title text-white">Today: {{dashcards1.0.now}} $</h4>
+                    <h4 class="card-title text-white">Yesterday: {{dashcards1.0.previous}} $ </h4>
                   </div>
                   <div class="card-footer">
                     <div class="stats">
-                    {% if dashcard.percentage > '0'  %}
+                    {% if dashcards1.0.percentage > '0'  %}
                       <p class="card-category">
-                      <span class="text-success"><i class="fa fa-long-arrow-up"></i> {{dashcard.percentage}}% </span> increase in {{dashcard.type}} sales.</p>
+                      <span class="text-success font-weight-bold"><i class="fa fa-long-arrow-up "></i> {{dashcards1.0.percentage}}% </span> increase in {{dashcards1.0.type}} sales.</p>
                     {% else%}
                       <p class="card-category">
-                      <span class="text-danger"><i class="fa fa-long-arrow-down"></i> {{dashcard.percentage}}% </span> decrease in {{dashcard.type}} sales.</p>
+                      <span class="text-danger font-weight-bold"><i class="fa fa-long-arrow-down "></i> {{dashcards1.0.percentage}}% </span> decrease in {{dashcards1.0.type}} sales.</p>
                     {% endif %}
                     </div>
                   </div>
                 </div>
               </div>
-              {% endfor %}
+              {% comment %} secound card {% endcomment %}
+              <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">{{dashcards1.1.type}} Sales</span></p>
+                    <h4 class="card-title text-white font-weight-bold">This Week: {{dashcards1.1.now}} $</h4>
+                    <h4 class="card-title text-white">Previous Week: {{dashcards1.1.previous}} $ </h4>
+                  </div>
+                  <div class="card-footer">
+                    <div class="stats">
+                    {% if dashcards1.1.percentage > '0'  %}
+                      <p class="card-category">
+                      <span class="text-success font-weight-bold"><i class="fa fa-long-arrow-up "></i> {{dashcards1.1.percentage}}% </span> increase in {{dashcards1.1.type}} sales.</p>
+                    {% else%}
+                      <p class="card-category">
+                      <span class="text-danger font-weight-bold"><i class="fa fa-long-arrow-down "></i> {{dashcards1.1.percentage}}% </span> decrease in {{dashcards1.1.type}} sales.</p>
+                    {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {% comment %} Third card {% endcomment %}
+              <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">{{dashcards1.2.type}} Sales</span></p>
+                    <h4 class="card-title text-white">This Month: {{dashcards1.2.now}} $</h4>
+                    <h4 class="card-title text-white">Previous Month: {{dashcards1.2.previous}} $ </h4>
+                  </div>
+                  <div class="card-footer">
+                    <div class="stats">
+                    {% if dashcards1.2.percentage > '0'  %}
+                      <p class="card-category">
+                      <span class="text-success font-weight-bold"><i class="fa fa-long-arrow-up "></i> {{dashcards1.2.percentage}}% </span> increase in {{dashcards1.2.type}} sales.</p>
+                    {% else%}
+                      <p class="card-category">
+                      <span class="text-danger font-weight-bold"><i class="fa fa-long-arrow-down "></i> {{dashcards1.2.percentage}}% </span> decrease in {{dashcards1.2.type}} sales.</p>
+                    {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
           </div>
         {% comment %} first row ended {% endcomment %}
          <div class = "row d-flex justify-content-center">
