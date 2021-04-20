@@ -176,29 +176,29 @@ group by category, week
 order by category, week) c on c.week = b.week;
 
 #27
-select category, year, sum(sales) sales, sum(profit) revenue from pj_sales_category_date
+select category, year, format(sum(sales),2) sales, format(sum(profit),2) revenue from pj_sales_category_date
 group by category, year
 order by category, year;
 #28
-select a.*, b.sales_prev, (((a.sales_now-b.sales_prev)/b.sales_prev)*100) percent_diff from
-(select category, sum(sales) sales_now from pj_sales_category_date pj
+select a.*, b.sales_prev, format((((a.sales_now-b.sales_prev)/b.sales_prev)*100),2) percent_diff from
+(select category, format(sum(sales),2) sales_now from pj_sales_category_date pj
 where year = 2014 and pj.month = 12 group by category) a
 inner join
-(select category, sum(sales) sales_prev from pj_sales_category_date pj
+(select category, format(sum(sales),2) sales_prev from pj_sales_category_date pj
 where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;
 
-select a.*, b.profit_prev, (((a.profit_now-b.profit_prev)/b.profit_prev)*100) percent_diff from
-(select category, sum(profit) profit_now from pj_sales_category_date pj
+select a.*, b.profit_prev, format((((a.profit_now-b.profit_prev)/b.profit_prev)*100),2) percent_diff from
+(select category, format(sum(profit),2) profit_now from pj_sales_category_date pj
 where year = 2014 and pj.month = 12 group by category) a
 inner join
-(select category, sum(profit) profit_prev from pj_sales_category_date pj
+(select category, format(sum(profit),2) profit_prev from pj_sales_category_date pj
 where year = 2014 and pj.month = 11 group by category) b on a.category = b.category;
 
 #29
-select category, sum(sales) this_quarter_sales from pj_sales_category_date
+select category, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date
 where year = 2014 and quarter = 4 group by category;
 #30
-select category, subcategory, sum(sales) this_quarter_sales from pj_sales_category_date
+select concat(concat(category, ', '), subcategory)subcategory, convert(sum(sales),signed) this_quarter_sales from pj_sales_category_date
 where year = 2014 and quarter = 4 group by category, subcategory;
 #31
 select category, sum(quantity) units_sold_this_month from pj_sales_category_date
@@ -422,11 +422,32 @@ where product1 = 'Staples' and counts>1;
 
 ## Product combinations that were sold more than 1 times together
 ## and their combined profit (profit is negative if any discount was offered)
-select p.product1, p.product2, c.counts, p.profit from 
-(select a.product_name product1, b.product_name product2, (a.profit + b.profit) profit 
-from (select s.order_id, p.product_name, profit from sales_fact s 
+select p.product1, p.product2, c.counts, p.sales, p.profit, p.quantity1, p.quantity2 from 
+(select a.product_name product1, b.product_name product2, sum((a.sales + b.sales)) sales, sum(a.quantity) quantity1, sum(b.quantity) quantity2, sum((a.profit + b.profit)) profit 
+from (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
 inner join product_dim p on s.product_id = p.product_id) a 
-inner join (select s.order_id, p.product_name, profit from sales_fact s 
+inner join (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) p
+inner join
+(select a.product_name product1, b.product_name product2, count(*) counts 
+from (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
+where a.product_name != b.product_name
+group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2 
+where c.counts > 1
+order by c.counts desc;
+
+## Products that were sold with Product X more than one time
+## and their combined profit
+select p.product1, p.product2, c.counts, p.sales, p.profit, p.quantity1, p.quantity2 from 
+(select a.product_name product1, b.product_name product2, sum((a.sales + b.sales)) sales, sum(a.quantity) quantity1, sum(b.quantity) quantity2, sum((a.profit + b.profit)) profit 
+from (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
+inner join product_dim p on s.product_id = p.product_id) a 
+inner join (select s.order_id, p.product_name, sales, quantity, profit from sales_fact s 
 inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
 where a.product_name != b.product_name
 group by a.product_name, b.product_name) p
@@ -438,8 +459,15 @@ inner join (select s.order_id, p.product_name from sales_fact s
 inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
 where a.product_name != b.product_name
 group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2
-where c.counts > 1
+where c.counts > 1 and p.product1 = 'Staples'
 order by c.counts desc;
+
+## using the materialized view
+select * from mv_product_association
+                  where counts > 1 and product1 = 'Staples';
+select * from mv_product_association where product1 = 'Staples' and counts>1 
+order by counts desc;
+select * from mv_product_association where counts>1 order by counts desc;
 
 ##____________________________________________________________________________________________
 ## Data Mining Datasets

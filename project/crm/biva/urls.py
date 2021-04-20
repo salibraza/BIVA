@@ -17,5 +17,5 @@ urlpatterns = [
     path("product/", views.product, name="product"),
     path("customer/", views.customer, name="customer"),
     path("returns/", views.returns, name="returns"),
-    # path("graph/", views.graph, name="graph"),
+    path("graph/", views.graph, name="graph"),
 ]
