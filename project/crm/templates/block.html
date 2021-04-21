@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css">
   <!-- CSS Files -->
   <link href="{% static 'css/material-dashboard.css'%}" rel="stylesheet" />
+  {% block cssfile %}{% endblock cssfile %}
 </head>
 
 <body class="">
@@ -67,7 +68,8 @@
             </li>
           {% endif %}
           {% comment %} Dimension Report Drop Down menu {% endcomment %}
-          <li class="nav-item dropdown">
+          {% if dimension %}
+            <li class="nav-item active dropdown">
                 <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                   <i class="material-icons">content_paste</i>
                   <p>
@@ -76,13 +78,31 @@
                   {% comment %} We will apply loop here to make it dinamically {% endcomment %}
                 </a> 
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
-                  <a class="dropdown-item" href="#">One Dimension</a>
+                  <a class="dropdown-item" href="categorydim">Category</a>
                   <a class="dropdown-item" href="#">2nd Dimension</a>
                   <a class="dropdown-item" href="#">3rd Dimension</a>
                   <a class="dropdown-item" href="#">4th Dimension</a>
                   <a class="dropdown-item" href="#">5th Dimension</a>
                 </div>
               </li>
+          {% else %}
+            <li class="nav-item dropdown">
+                  <a class="nav-link" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="material-icons">content_paste</i>
+                    <p>
+                      Dimension Report
+                    </p>
+                    {% comment %} We will apply loop here to make it dinamically {% endcomment %}
+                  </a> 
+                  <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
+                    <a class="dropdown-item" href="categorydim">Category</a>
+                    <a class="dropdown-item" href="#">2nd Dimension</a>
+                    <a class="dropdown-item" href="#">3rd Dimension</a>
+                    <a class="dropdown-item" href="#">4th Dimension</a>
+                    <a class="dropdown-item" href="#">5th Dimension</a>
+                  </div>
+              </li>
+            {% endif %}
             {% if decision %}
               <li class="nav-item active">
               <a class="nav-link" href="decision">

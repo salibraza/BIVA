@@ -1,19 +1,71 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-2.3.0.min.css"/>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.0.min.css"/>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-tables-2.3.0.min.css"/>
-    <title>BIVA</title>
-</head>
-<body> 
-   <h1> <h1>
-    {{graphdiv| safe}}
-</body>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-tables-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-api-2.3.0.min.js"></script> 
-    {{graphscript | safe}}
-</html>
+{% extends 'block.html' %}
+{% load static%}
+{% block cssfile %}
+<link href="{% static 'css/personal.css'%}" rel="stylesheet" />
+{% endblock cssfile %}
+{% block content%}
+    <div class = "row d-flex justify-content-center">
+        <div class="col-md-8">
+              <div class="card" >
+                <div class="card-header card-header-primary" >
+                  <h4 class="card-title">Network Graph</h4>
+                  <p class="card-category">Enter your products</p>
+                </div>
+                <div class="card-body">
+                  <form method = 'POST' action="graph">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Type in product</label>
+                          <input type="text" class="form-control" name = "first">
+                        </div>
+                      </div>
 
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating" >Type in product</label>
+                          <input type="text" class="form-control" name = "secound">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                        <div class="form-group col-md-4">
+                                <label for="order">Mutual Orders</label>
+                                <select name = 'order' id="order"  class="form-control">
+                                  <option selected>1</option>
+                                  <option>2</option>
+                                  <option>3</option>
+                                  <option>4</option>
+                                </select>
+                        </div>
+                        <div class="col-md-12 form-group">
+                          <div class="form-check">
+                                <label class="form-check-label">
+                                  <input class="form-check-input" type="checkbox" name = "checkbox" value="True" checked >
+                                  Lable
+                                  <span class="form-check-sign">
+                                    <span class="check"></span>
+                                  </span>
+                                </label>
+                           </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary pull-right">Generate Graph</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+    </div>
+    <div class = "row d-flex justify-content-center">
+        <div class"col-md-10">
+            <div class="card card-content content-center">
+                {{graphdiv| safe}}
+                {{graphscript | safe}}
+            </div>
+        </div>
+    </div>
+{% endblock content%}

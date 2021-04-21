@@ -1,29 +1,195 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-2.3.0.min.css"/>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.0.min.css"/>
-    <link rel="stylesheet" type="text/css" href="http://cdn.pydata.org/bokeh/release/bokeh-tables-2.3.0.min.css"/>
-    <title>BIVA</title>
-</head>
-<body> 
-   <h1> <h1>
-    {{div26| safe}}
-    {{div29| safe}}
-    {{div30| safe}}
-    {{div31| safe}}
-    {{div32| safe}}
-    {{div33| safe}}
-</body>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-tables-2.3.0.min.js"></script>
-    <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-api-2.3.0.min.js"></script> 
-    {{script26 | safe}}
-    {{script29 | safe}}
-    {{script30 | safe}}
-    {{script31 | safe}}
-    {{script32 | safe}}
-    {{script33 | safe}}
-</html>
+{% extends 'block.html' %}
+{% block content %}
+        {% comment %} First Row  {% endcomment %}
+        <div class = "row">
+          <div class="col-lg-8 col-md-12">
+                <div class="card">
+                  <div class="card-header card-header-tabs card-header-primary">
+                    <div class="nav-tabs-navigation">
+                      <div class="nav-tabs-wrapper">
+                        <span class="nav-tabs-title">Category</span>
+                        <ul class="nav nav-tabs" data-tabs="tabs">
+                          <li class="nav-item">
+                            <a class="nav-link active" href="#furniture" data-toggle="tab">
+                              <i class="material-icons">apartment</i> Furniture
+                              <div class="ripple-container"></div>
+                            </a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#office" data-toggle="tab">
+                              <i class="material-icons">work</i> Office
+                              <div class="ripple-container"></div>
+                            </a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link" href="#technology" data-toggle="tab">
+                              <i class="material-icons">smartphone</i> Technology
+                              <div class="ripple-container"></div>
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body">
+                    <div class="tab-content">
+                      <div class="tab-pane active" id="furniture">
+                        <table class="table">
+                          <thead class="text-warning">
+                              <th>Year</th>
+                              <th>Sales</th>
+                              <th>Profit</th>
+                          </thead>
+                          <tbody>
+                            {% for card in dynmcards|slice:":4" %}
+                              <tr>
+                                <td>{{card.now}}</td>
+                                <td>{{card.previous}}</td>
+                                <td>{{card.percentage}}</td>
+                              </tr>
+                            {% endfor%}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="tab-pane" id="office">
+                          <table class="table">
+                            <thead class="text-warning">
+                                <th>Year</th>
+                                <th>Sales</th>
+                                <th>Profit</th>
+                            </thead>
+                            <tbody>
+                            {% for card in dynmcards|slice:"4:8" %}
+                              <tr>
+                                <td>{{card.now}}</td>
+                                <td>{{card.previous}}</td>
+                                <td>{{card.percentage}}</td>
+                              </tr>
+                            {% endfor%}
+                            </tbody>
+                          </table>
+                          
+                        </div>
+                        <div class="tab-pane" id="technology">
+                          <table class="table">
+                            <thead class="text-warning">
+                                <th>Year</th>
+                                <th>Sales</th>
+                                <th>Profit</th>
+                            </thead>
+                            <tbody>
+                            {% for card in dynmcards|slice:"8:12" %}
+                              <tr>
+                                <td>{{card.now}}</td>
+                                <td>{{card.previous}}</td>
+                                <td>{{card.percentage}}</td>
+                              </tr>
+                            {% endfor%}
+                            </tbody>
+                          </table>
+                          
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+        {% comment %} First row ended {% endcomment %}
+        <div class = "row ml-1">
+          {% for card in salescard%}
+            <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">{{card.type}} Sales</span></p>
+                    <h4 class="card-title text-white">This Month: {{card.now}} $</h4>
+                    <h4 class="card-title text-white">Previous Month: {{card.previous}} $ </h4>
+                  </div>
+                   <div class="card-footer">
+                    <div class="stats">
+                    {% if card.percentage > '0'  %}
+                      <p class="card-category">
+                      <span class="text-success font-weight-bold"><i class="fa fa-long-arrow-up "></i> {{card.percentage}}% </span> increase in {{card.type}}'s sales.</p>
+                    {% else%}
+                      <p class="card-category">
+                      <span class="text-danger font-weight-bold"><i class="fa fa-long-arrow-down "></i> {{card.percentage}}% </span> decrease in {{card.type}}'s sales.</p>
+                    {% endif %}
+                    </div>
+                  </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% comment %} Secound Row Sales Card {% endcomment %}
+        <div class = "row ml-1">
+          {% for card in profitscard %}
+            <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #F29722;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">{{card.type}} Profits</span></p>
+                    <h4 class="card-title text-white">This Month: {{card.now}} $</h4>
+                    <h4 class="card-title text-white">Previous Month: {{card.previous}} $ </h4>
+                  </div>
+                   <div class="card-footer">
+                    <div class="stats">
+                    {% if card.percentage > '0'  %}
+                      <p class="card-category">
+                      <span class="text-success font-weight-bold"><i class="fa fa-long-arrow-up "></i> {{card.percentage}}% </span><span class= "text-white"> increase in {{card.type}}'s Profits.</span></p>
+                    {% else%}
+                      <p class="card-category">
+                      <span class="text-danger font-weight-bold"><i class="fa fa-long-arrow-down "></i> {{card.percentage}}% </span><span class="text-white"> decrease in {{card.type}}'s Profits.</span></p>
+                    {% endif %}
+                    </div>
+                  </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% comment %} Third Row Profit Cards {% endcomment %}
+         <div class="row">
+            <div class="col-md-8 col-md-8 ml-3">
+              <div class="card card-content">
+                {{divlist.2| safe }}
+                {{scriptlist.2| safe}} 
+              </div>
+            </div>
+            <div class="col-sm-3 col-sm-3 ml-1 mr-2">
+              <div class="card card-content">
+                {{divlist.3| safe }}
+                {{scriptlist.3| safe}} 
+              </div>
+            </div>
+              
+         </div>
+        {% comment %} Fourth row ended {% endcomment %}
+          <div class = "row d-flex justify-content-center">
+                {{divlist.0| safe }}
+                {{scriptlist.0| safe}}
+          </div> 
+        {% comment %} Fifth Row Ended Weekly commulative Sales line Graph comparison {% endcomment %}
+          <div class='row '>
+            <div class="col-md-6 col-md-6 ml-3">
+              <div class="card card-content">
+                {{divlist.4| safe }}
+                {{scriptlist.4| safe}} 
+              </div>
+            </div>
+            <div class="col-sm-4 col-sm-4 ml-5">
+              <div class="card card-content">
+                {{divlist.1| safe }}
+                {{scriptlist.1| safe}} 
+              </div>
+            </div>
+          </div>
+          {% comment %} Sixth row ended Pie chart and graph {% endcomment %}
+          <div class = "row d-flex justify-content-center">
+                {{divlist.5| safe }}
+                {{scriptlist.5| safe}}
+          </div>
+          {% comment %} seventh row ended {% endcomment %}
+        
 
+     
+      
+    {% comment %} write within its wrapper {% endcomment %}
+{% endblock content %}

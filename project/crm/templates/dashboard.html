@@ -1,8 +1,7 @@
 {% extends 'block.html' %}
 {% block content %}
         {% comment %} First Row  {% endcomment %}
-            <div class="row">
-              
+            <div class="row"> 
               <div class="col-sm-4 col-sm-4 col-sm-4 ">
                 <div class="card card-stats text-white" style = " background-color: #03497D;">
                   <div class="card-header ">
@@ -28,7 +27,7 @@
                 <div class="card card-stats text-white" style = " background-color: #03497D;">
                   <div class="card-header ">
                     <p class="card-category"><span class = "text-white">{{dashcards1.1.type}} Sales</span></p>
-                    <h4 class="card-title text-white font-weight-bold">This Week: {{dashcards1.1.now}} $</h4>
+                    <h4 class="card-title text-white ">This Week: {{dashcards1.1.now}} $</h4>
                     <h4 class="card-title text-white">Previous Week: {{dashcards1.1.previous}} $ </h4>
                   </div>
                   <div class="card-footer">
@@ -110,16 +109,16 @@
                 {{scriptlist.2| safe}} 
               </div>
             </div>
-          <br>
+          </div>
           {% comment %} Forth row ended two Graphs {% endcomment %}
           <div class='row '>
-            <div class="col-md-8 col-md-8 ml-3">
+            <div class="col-md-8 col-md-8 ">
               <div class="card card-content">
                 {{divlist.4| safe }}
                 {{scriptlist.4| safe}} 
               </div>
             </div>
-            <div class="col-sm-3 col-sm-3 ml-3">
+            <div class="col-sm-3 col-sm-3 ml-1">
               <div class="card card-content">
                 {{divlist.1| safe }}
                 {{scriptlist.1| safe}} 
@@ -127,7 +126,7 @@
             </div>
           </div>
           {% comment %} Fifth row ended Pie chart and graph {% endcomment %}
-          <div class = "row d-flex justify-content-center ml-5">
+          <div class = "row d-flex justify-content-center ">
                 {{divlist.5| safe }}
                 {{scriptlist.5| safe}}
           </div>
