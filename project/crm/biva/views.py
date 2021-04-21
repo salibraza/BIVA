@@ -1381,7 +1381,7 @@ def category(request):
                 
                 return render(request,'category.html',{'scriptlist':scriptlist, 'divlist':divlist,
                                                 'salescard':salescard,'profitscard':profitscard,
-                                                'dynmcards':dynmcards,'products':n1,'avgprice':u1,
+                                                'dynmcards':dynm_cards,'products':n1,'avgprice':u1,
                                                 'dimension':True,'name':"Category",'category':False,'subcategory':True})
                 
             
