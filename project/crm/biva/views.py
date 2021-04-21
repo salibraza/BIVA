@@ -7,8 +7,8 @@ from .models import Cards
 from bokeh.plotting import figure, from_networkx
 from bokeh.embed import components
 from bokeh.layouts import column, row, gridplot
-from bokeh.palettes import Category20c, Spectral10, Spectral4, Spectral5
-from bokeh.transform import cumsum, factor_cmap, dodge
+from bokeh.palettes import Category20c, Spectral10, Spectral4, Spectral5, Blues8, Blues256
+from bokeh.transform import cumsum, factor_cmap, dodge, linear_cmap
 from bokeh.models import ColumnDataSource,  LabelSet
 from bokeh.models import (BoxSelectTool, Circle, EdgesAndLinkedNodes, HoverTool,
                           MultiLine, NodesAndLinkedEdges, Plot, Range1d, TapTool,)
@@ -24,6 +24,67 @@ mydb = mysql.connector.connect(
     database="biva"
     )
 mycursor =  mydb.cursor()
+
+## ===============================================================================================
+## Progress Calculation Functions. Inko ni Cherna
+## ===============================================================================================
+def progress_calculator1(country, subcat, segment):
+    mycursor.execute("select profit, quantity, transactions from progress_calc_view \
+    where country = '"+country+"' and subcategory = '"+subcat+"' and segment  = '"+segment+"';")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'profit', 1:'quantity', 2: 'count'})
+    t_count = 0
+    high_profit = good_profit = loss = 0
+    low_quantity = good_quantity = 0
+    length = len(df)
+    for x in range (0,length):
+        if df.at[x,'profit'] == 'HP':
+            high_profit += 1
+        elif df.at[x,'profit'] == 'GP':
+            good_profit +=1
+        else :
+            loss+=1
+        if df.at[x,'quantity'] == 'Low':
+            low_quantity += 1
+        else:
+            good_quantity += 1
+        t_count += df.at[x,'count']
+    high_profit = round((high_profit/length)*100)
+    good_profit = round((good_profit/length)*100)
+    loss = round((loss/length)*100)
+    good_quantity = round((good_quantity/length)*100)
+    low_quantity = round((low_quantity/length)*100)
+    return [high_profit,good_profit,loss,low_quantity,good_quantity,t_count]
+
+def progress_calculator2(country, subcat):
+    mycursor.execute("select profit, quantity, transactions from progress_calc_view \
+    where country = '"+country+"' and subcategory = '"+subcat+"';")
+    df = pd.DataFrame(mycursor.fetchall())
+    df = df.rename(columns = {0:'profit', 1:'quantity', 2: 'count'})
+    t_count = 0
+    high_profit = good_profit = loss = 0
+    low_quantity = good_quantity = 0
+    length = len(df)
+    for x in range (0,length):
+        if df.at[x,'profit'] == 'HP':
+            high_profit += 1
+        elif df.at[x,'profit'] == 'GP':
+            good_profit +=1
+        else :
+            loss+=1
+        if df.at[x,'quantity'] == 'Low':
+            low_quantity += 1
+        else:
+            good_quantity += 1
+        t_count += df.at[x,'count']
+    high_profit = round((high_profit/length)*100)
+    good_profit = round((good_profit/length)*100)
+    loss = round((loss/length)*100)
+    good_quantity = round((good_quantity/length)*100)
+    low_quantity = round((low_quantity/length)*100)
+    return [high_profit,good_profit,loss,low_quantity,good_quantity,t_count]
+## ===============================================================================================
+## ===============================================================================================
 
 
 # Create your views here.
@@ -1147,7 +1208,7 @@ def graph(request):
     df2 = df2.rename(columns = {0:'p1'})
     product_list = df2['p1'].tolist() #list having product names (3742 products)
     
-    labelnodes = True
+    labelnodes = False
     productname = 'Staples'     # can have any value from product_list, '' is no prodcut selected
     productname2 = ''           # can have any value from product_list, '' is no prodcut selected
     counts = '1'                # can have values 0,1,2,3,4
@@ -1236,3 +1297,468 @@ def graph(request):
     graphscript, graphdiv = components(p)
 
     return render(request, 'graph.html', {'graphscript':graphscript, 'graphdiv':graphdiv})
+
+def specific_category(request):
+        # category name
+        cat = 'Furniture'
+        #====================================================================================================
+        # 34
+        mycursor.execute("select c.category, count(*) prodcuts_count, format(avg(p.unit_price),2) average_product_price from category_dim c \
+        inner join product_dim p on p.category_id = c.category_id \
+        where c.category = '"+cat+"' \
+        group by c.category;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+        # number of products and avg unit price for cat
+        n = df.at[0,'1']
+        u = df.at[0,'2']
+        #====================================================================================================
+        # 35
+        mycursor.execute("select a.day, sum(a.sales) over(order by day) as sales_now, \
+        sum(b.sales) over(order by day) as sales_prev from \
+        (select day, sum(sales) sales from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and month = 11 \
+        and category = '"+cat+"' \
+        group by category, day \
+        order by category, day) a \
+        left join \
+        (select day, sum(sales) sales from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and month = 12 \
+        and category = '"+cat+"' \
+        group by category, day \
+        order by category, day) b on a.day = b.day;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+        df['diff'] = df['1']-df['2']
+        sc = ColumnDataSource(df)
+        p = figure(plot_width=800, plot_height=400, title="Daily Commulative Sales Of "+cat+" this Month and previous Month", 
+                y_axis_label = "Sales (in USD)", 
+                x_axis_label = "Date of Month",
+                tools="box_select,zoom_in,zoom_out,save,reset", 
+                tooltips=[("Day", "@0"), ("This Month", "@1"), ("Previous Month", "@2"), ("Difference", "@diff")])
+
+        # add a line renderer
+        p.line('0', '1', source = df, line_width=3, color = Spectral4[0], legend_label='This Month')
+        p.line('0', '2', source = df, line_width=3, color = Spectral4[2], legend_label='Previous Month')
+        p.legend.location = "top_left"
+        p.toolbar.logo = None
+        script35, div35 = components(p)
+        #====================================================================================================
+        # 36
+        mycursor.execute("select 'Quarter 1' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=1 and category = '"+cat+"') m1, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=2 and category = '"+cat+"') m2, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=3 and category = '"+cat+"') m3 \
+        union \
+        select 'Quarter 2' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=4 and category = '"+cat+"') m1, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=5 and category = '"+cat+"') m2, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=6 and category = '"+cat+"') m3 \
+        union \
+        select 'Quarter 3' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=7 and category = '"+cat+"') m1, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=8 and category = '"+cat+"') m2, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=9 and category = '"+cat+"') m3 \
+        union \
+        select 'Quarter 4' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=10 and category = '"+cat+"') m1, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=11 and category = '"+cat+"') m2, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=12 and category = '"+cat+"') m3;") 
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'Month 1', 2: 'Month 2', 3: 'Month 3'})
+
+        p = figure(x_range = df['0'], 
+                plot_height = 400,
+                plot_width = 400,
+                title="Monthly Profit of "+cat+" in every Quarter this Year", 
+                y_axis_label = "Amount in USD", 
+                x_axis_label = "Quarters of Year",
+                tools="pan,tap,box_select,save,reset,hover", 
+                tooltips="@0 $name: @$name")
+        colors = [Spectral4[0],Spectral4[1],Spectral4[2]]
+        measures = ['Month 1','Month 2','Month 3']
+        p.vbar_stack(measures, 
+                x='0', 
+                width=0.7, 
+                color=colors, 
+                source=df,
+                fill_alpha = 1,
+                legend_label=measures)
+        #p.xaxis.major_label_orientation = 0.9
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.legend.location = "top_left"
+        p.toolbar.logo = None
+        script36, div36 = components(p)
+        #====================================================================================================
+        # 37
+        mycursor.execute("select a.mname month, a.quantity this_year, b.quantity prev_year from \
+        (select monthname(date) mname, sum(quantity) quantity from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and category = '"+cat+"' \
+        group by month order by month) a \
+        inner join \
+        (select monthname(date) mname, sum(quantity) quantity from pj_sales_category_date \
+        where year = (select max(year)-1 from pj_sales_category_date) \
+        and category = '"+cat+"' \
+        group by month order by month) b on a.mname = b.mname;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+
+        p = figure(x_range = df['0'], 
+                plot_width=600, 
+                plot_height=400,
+                title="Units sold in "+cat+" this Year and Previous Year", 
+                y_axis_label = "Units Sold", 
+                x_axis_label = "Month",
+                tools="box_select,tap,save,reset", 
+                tooltips=[("Month", "@0"), ("This Year", "@1"), ("Last Year", "@2")])
+        p.vbar(x=dodge('0', -0.15, range=p.x_range), 
+                top = '2', # y-axis values column of source
+                width = 0.4, 
+                source = df, 
+                line_color="white", 
+                color = '#e6550d', 
+                fill_alpha = 0.9,
+                legend_label='Last Year')
+        p.vbar(x=dodge('0', +0.20, range=p.x_range), 
+                top = '1', # y-axis values column of source
+                width = 0.4, 
+                source = df, 
+                line_color="white", 
+                color = '#3182bd', 
+                fill_alpha = 0.9,
+                legend_label='This Year')
+        p.xaxis.major_label_orientation = 0.8
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.legend.location = 'top_left'
+        p.toolbar.logo = None
+        script37, div37 = components(p)
+        #====================================================================================================
+        # 38
+        mycursor.execute("select l.market, sum(s.sales) sales, sum(s.discount) discount from \
+        (select * from category_dim where category = '"+cat+"') c \
+        inner join product_dim p on c.category_id = p.category_id \
+        inner join sales_fact s on p.product_id = s.product_id \
+        inner join location_dim l on s.location_id = l.location_id \
+        group by l.market;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'market', 1:'sales', 2: 'discount'})
+
+        p = figure(x_range = df['market'], 
+                plot_height = 400,
+                plot_width = 400,
+                title="Sales and Discount of "+cat+" in all Markets", 
+                y_axis_label = "Amount in USD", 
+                x_axis_label = "Sales in USD",
+                tools="tap,box_select,zoom_in,zoom_out,save,reset,hover", 
+                tooltips="@market $name: @$name")
+        colors = ["#3182bd", "#e6550d"]
+        measures = ['sales','discount']
+        p.vbar_stack(measures, 
+                x='market', 
+                width=0.9, 
+                color=colors, 
+                source=df,
+                fill_alpha = 0.9,
+                legend_label=measures)
+        #p.xaxis.major_label_orientation = 0.9
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.toolbar.logo = None
+        script38, div38 = components(p)
+        #====================================================================================================
+        return render(request, 'category.html', {''})
+
+def specific_subcategory():
+        # subcategory name
+        scat = 'Furnishings'
+        #====================================================================================================
+        # 39
+        mycursor.execute("select convert(year,char) year, monthname(date) months, convert(sum(quantity),unsigned) quantity from pj_sales_category_date \
+        where subcategory = '"+scat+"' \
+        group by year, month order by year, month;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'year', 1:'month', 2: 'quantity'})
+
+        df2 = df.pivot(index='year', columns='month', values='quantity')
+        data = ColumnDataSource(df)
+
+        # List to keep months in order
+        months = []
+        for i in range(0,12):
+        months.append(df.at[i,'month'])
+
+        # Setting palette values according to quantity values
+        # Reference: https://docs.bokeh.org/en/latest/docs/user_guide/categorical.html
+        colours = LinearColorMapper(palette=Blues256, low=df.quantity.max(), high=df.quantity.min())
+
+        p = figure(x_range=list(df2.index),
+                y_range=months,
+                plot_width=800, 
+                plot_height=300, 
+                title="Quantity of units Sold in "+scat+" each Month in last 4 Years",
+                tools="box_select,zoom_in,zoom_out,save,reset",
+                tooltips=[("Month, Year", "@month @year"), ("Quantity", "@quantity")])
+        p.rect(x="year", y="month", 
+                width=1, height=1, 
+                source=data, 
+                line_color=None, 
+                fill_color=transform('quantity', colours))
+        color_bar = ColorBar(color_mapper=colours,
+                        ticker=BasicTicker(desired_num_ticks=len(Blues256)))
+
+        p.add_layout(color_bar, 'right')
+        p.axis.axis_line_color = None
+        p.axis.major_tick_line_color = None
+        p.axis.major_label_text_font_size = "12px"
+        p.axis.major_label_standoff = 0
+        #p.xaxis.major_label_orientation = 1.0
+        p.toolbar.logo = None
+        script39, div39 = components(p)
+        #====================================================================================================
+        # 40
+        mycursor.execute("select c.subcategory, count(*) prodcuts_count, format(avg(p.unit_price),2) average_product_price from category_dim c \
+        inner join product_dim p on p.category_id = c.category_id \
+        where c.subcategory = '"+scat+"' \
+        group by c.subcategory;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+
+        # number of products and avg unit price for cat
+        n1 = df.at[0,'1']
+        u1 = df.at[0,'2']
+        #====================================================================================================
+        # 41
+        mycursor.execute("select a.day, sum(a.sales) over(order by day) as sales_now, \
+        sum(b.sales) over(order by day) as sales_prev from \
+        (select day, sum(sales) sales from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and month = 11 \
+        and subcategory = '"+scat+"' \
+        group by subcategory, day \
+        order by subcategory, day) a \
+        left join \
+        (select day, sum(sales) sales from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and month = 12 \
+        and subcategory = '"+scat+"' \
+        group by subcategory, day \
+        order by subcategory, day) b on a.day = b.day;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+
+        df['diff'] = df['1']-df['2']
+        sc = ColumnDataSource(df)
+        p = figure(plot_width=800, plot_height=400, title="Daily Commulative Sales Of "+scat+" this Month and previous Month", 
+                y_axis_label = "Sales (in USD)", 
+                x_axis_label = "Date of Month",
+                tools="box_select,zoom_in,zoom_out,save,reset", 
+                tooltips=[("Day", "@0"), ("This Month", "@1"), ("Previous Month", "@2"), ("Difference", "@diff")])
+
+        # add a line renderer
+        p.line('0', '1', source = df, line_width=3, color = Spectral4[0], legend_label='This Month')
+        p.line('0', '2', source = df, line_width=3, color = Spectral4[2], legend_label='Previous Month')
+        p.legend.location = "top_left"
+        p.toolbar.logo = None
+        script41, div41 = components(p)
+        #====================================================================================================
+        # 42
+        mycursor.execute("select 'Quarter 1' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=1 and subcategory = '"+scat+"') m1,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=2 and subcategory = '"+scat+"') m2,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=3 and subcategory = '"+scat+"') m3 \
+        union \
+        select 'Quarter 2' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=4 and subcategory = '"+scat+"') m1,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=5 and subcategory = '"+scat+"') m2,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=6 and subcategory = '"+scat+"') m3 \
+        union \
+        select 'Quarter 3' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=7 and subcategory = '"+scat+"') m1,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=8 and subcategory = '"+scat+"') m2,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=9 and subcategory = '"+scat+"') m3 \
+        union \
+        select 'Quarter 4' as Quarter, \
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=10 and subcategory = '"+scat+"') m1,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=11 and subcategory = '"+scat+"') m2,\
+        (select sum(profit) from pj_sales_category_date where year=2014 and month=12 and subcategory = '"+scat+"') m3;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'Month 1', 2: 'Month 2', 3: 'Month 3'})
+
+        p = figure(x_range = df['0'], 
+                plot_height = 450,
+                plot_width = 400,
+                title="Monthly Profit of "+scat+" in every Quarter this Year", 
+                y_axis_label = "Amount in USD", 
+                x_axis_label = "Quarters of Year",
+                tools="pan,tap,box_select,save,reset,hover", 
+                tooltips="@0 $name: @$name")
+        colors = [Spectral4[0],Spectral4[1],Spectral4[2]]
+        measures = ['Month 1','Month 2','Month 3']
+        p.vbar_stack(measures, 
+                x='0', 
+                width=0.7, 
+                color=colors, 
+                source=df,
+                fill_alpha = 1,
+                legend_label=measures)
+        #p.xaxis.major_label_orientation = 0.9
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.legend.location = "top_left"
+        p.toolbar.logo = None
+        script42, div42 = components(p)
+        #====================================================================================================
+        #43
+        mycursor.execute("select a.mname month, a.quantity this_year, b.quantity prev_year from \
+        (select monthname(date) mname, sum(quantity) quantity from pj_sales_category_date \
+        where year = (select max(year) from pj_sales_category_date) \
+        and subcategory = '"+scat+"' \
+        group by month order by month) a \
+        inner join \
+        (select monthname(date) mname, sum(quantity) quantity from pj_sales_category_date \
+        where year = (select max(year)-1 from pj_sales_category_date) \
+        and subcategory = '"+scat+"' \
+        group by month order by month) b on a.mname = b.mname;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'0', 1:'1', 2: '2'})
+
+        p = figure(x_range = df['0'], 
+                plot_width=600, 
+                plot_height=400,
+                title="Units sold in "+scat+" this Year and Previous Year", 
+                y_axis_label = "Units Sold", 
+                x_axis_label = "Month",
+                tools="box_select,tap,save,reset", 
+                tooltips=[("Month", "@0"), ("This Year", "@1"), ("Last Year", "@2")])
+        p.vbar(x=dodge('0', -0.15, range=p.x_range), 
+                top = '2', # y-axis values column of source
+                width = 0.4, 
+                source = df, 
+                line_color="white", 
+                color = '#e6550d', 
+                fill_alpha = 0.9,
+                legend_label='Last Year')
+        p.vbar(x=dodge('0', +0.20, range=p.x_range), 
+                top = '1', # y-axis values column of source
+                width = 0.4, 
+                source = df, 
+                line_color="white", 
+                color = '#3182bd', 
+                fill_alpha = 0.9,
+                legend_label='This Year')
+        p.xaxis.major_label_orientation = 0.8
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.legend.location = 'top_left'
+        p.toolbar.logo = None
+        script43, div43 = components(p)
+        #====================================================================================================
+        #44
+        mycursor.execute("select l.market, sum(s.sales) sales, sum(s.discount) discount from \
+        (select * from category_dim where subcategory = '"+scat+"') c \
+        inner join product_dim p on c.category_id = p.category_id \
+        inner join sales_fact s on p.product_id = s.product_id \
+        inner join location_dim l on s.location_id = l.location_id \
+        group by l.market;")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'market', 1:'sales', 2: 'discount'})
+
+        p = figure(x_range = df['market'], 
+                plot_height = 400,
+                plot_width = 400,
+                title="Sales and Discount of "+scat+" in all Markets", 
+                y_axis_label = "Amount in USD", 
+                x_axis_label = "Sales in USD",
+                tools="tap,box_select,zoom_in,zoom_out,save,reset,hover", 
+                tooltips="@market $name: @$name")
+        colors = ["#3182bd", "#e6550d"]
+        measures = ['sales','discount']
+        p.vbar_stack(measures, 
+                x='market', 
+                width=0.9, 
+                color=colors, 
+                source=df,
+                fill_alpha = 0.9,
+                legend_label=measures)
+        #p.xaxis.major_label_orientation = 0.9
+        p.x_range.range_padding = 0.05
+        p.y_range.start = 0
+        p.legend.location = 'top_left'
+        p.toolbar.logo = None
+        script44, div44 = components(p)
+        #====================================================================================================
+        # 45
+        mycursor.execute("(select convert(pj.year,char) year, l.country, sum(quantity) quantity from pj_sales_category_date pj \
+        inner join location_dim l on pj.location_id = l.location_id \
+        where pj.subcategory = '"+scat+"' and pj.year = 2011 \
+        group by l.country order by quantity desc limit 10) \
+        union \
+        (select pj.year, l.country, sum(quantity) quantity from pj_sales_category_date pj \
+        inner join location_dim l on pj.location_id = l.location_id \
+        where pj.subcategory = '"+scat+"' and pj.year = 2012 \
+        group by l.country order by quantity desc limit 10) \
+        union \
+        (select pj.year, l.country, sum(quantity) quantity from pj_sales_category_date pj \
+        inner join location_dim l on pj.location_id = l.location_id \
+        where pj.subcategory = '"+scat+"' and pj.year = 2013 \
+        group by l.country order by quantity desc limit 10) \
+        union \
+        (select pj.year, l.country, sum(quantity) quantity from pj_sales_category_date pj \
+        inner join location_dim l on pj.location_id = l.location_id \
+        where pj.subcategory = '"+scat+"' and pj.year = 2014 \
+        group by l.country order by quantity desc limit 10);")
+        df = pd.DataFrame(mycursor.fetchall())
+        df = df.rename(columns = {0:'year', 1:'country', 2: 'sales'})
+
+        group = df.groupby(by=['year', 'country'])
+        index_cmap = factor_cmap('year_country', palette=Spectral10, factors=sorted(df.year.unique()), end=1)
+
+        p = figure(plot_width=800, 
+                plot_height=500, 
+                title="10 Countries with highest Sales of "+scat+" in last 4 year", 
+                x_axis_label = "Year and Countries",
+                y_axis_label = "Sales (in USD)", 
+                x_range=group, 
+                tools="tap,box_select,save,reset,hover", 
+                tooltips=[("year, country: ", "@year_country"), ("sales: ", "@sales_top")])
+        p.vbar(x='year_country', 
+                top='sales_top', width=1, 
+                source=group, 
+                line_color="white", 
+                fill_color=index_cmap)
+        p.y_range.start = 0
+        p.x_range.range_padding = 0.05
+        p.xgrid.grid_line_color = None
+        p.xaxis.major_label_orientation = 1.3
+        p.outline_line_color = 'black'
+        p.toolbar.logo = None
+        script45, div45 = components(p)
+        #====================================================================================================
+        
+        return render(request, 'category.html', {''})
+
+def decision_support(request):
+        country = 'United States'
+        subcat = 'Phones'
+        segment = 'Corporate'
+
+        if segment == '':
+                results = progress_calculator2(country, subcat)
+        if segment != '':
+                results = progress_calculator1(country, subcat, segment)
+        
+        hp = results[0] ## Percent Chances of high profit (profit > 1000$ per annum)
+        gp = results[1] ## Percent Chances of good profit (profit > 0 and <1000 $ per annum)
+        ls = results[2] ## Percent Chances of loss (profit < 0$ per annum)
+
+        gq = results[3] ## Percentage chances of good quantity sold (quantity>10 per anum)
+        lq = results[4] ## Percentage chances of low quantity sold (quantity<10 per anum)
+
+        trans = results[5] ## Results obtained from trans number of recorded transactions
+
+        return
