@@ -188,8 +188,136 @@
           </div>
           {% comment %} seventh row ended {% endcomment %}
         
+          {% comment %} Forms for Choosing Catrgory and Maping it{% endcomment %}
+          <div class = "row d-flex justify-content-center">
+            <div class="col-md-6">
+              <div class="card" >
+                <div class="card-header card-header-primary" >
+                  <h4 class="card-title">Specific Category</h4>
+                  <p class="card-category">Enter Category</p>
+                </div>
+                <div class="card-body">
+                  <form method = 'POST' action="#">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Category</label>
+                          <input type="text" class="form-control" name = "name" required>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary pull-right" name='button' value='category'>Submit</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            {% comment %} Secound Form {% endcomment %}
+            <div class="col-md-6">
+              <div class="card" >
+                <div class="card-header card-header-primary" >
+                  <h4 class="card-title">Specific Subcategory</h4>
+                  <p class="card-category">Enter Subcategory</p>
+                </div>
+                <div class="card-body">
+                  <form method = 'POST' action="#">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Sub-category</label>
+                          <input type="text" class="form-control" name = "name" required>
+                        </div>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary pull-right" name='button' value='subcategory'>Submit</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% comment %} Forms Ended {% endcomment %}
 
-     
+          {% comment %} Now by using IF statements form jinja notation we will differentiate between submissions {% endcomment %}
+          {% if category %}
+            <div class = "row d-flex justify-content-center">
+                {{divlist.6| safe }}
+                {{scriptlist.6| safe}}
+            </div>
+            <div class='row '>
+                <div class="col-md-6 col-md-6">
+                  <div class="card card-content" >
+                    {{divlist.7| safe }}
+                    {{scriptlist.7| safe}} 
+                  </div>
+                </div>
+                <div class="col-md-6 col-md-6">
+                  <div class="card card-content">
+                    {{divlist.9| safe }}
+                    {{scriptlist.9| safe}} 
+                  </div>
+                </div>
+            </div>
+            <div class = "row d-flex justify-content-center">
+                {{divlist.8| safe }}
+                {{scriptlist.8| safe}}
+              <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">Products Info</span></p>
+                    <h4 class="card-title text-white">Total number of: {{products}} units</h4>
+                    <h4 class="card-title text-white">Average price: {{avgprice}}$ </h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          {% if subcategory %}
+            <div class = "row d-flex justify-content-center">
+                {{divlist.6| safe }}
+                {{scriptlist.6| safe}}
+            </div>
+            <div class='row '>
+              <div class="col-md-6 col-md-6">
+                <div class="card card-content" >
+                  {{divlist.8| safe }}
+                  {{scriptlist.8| safe}} 
+                </div>
+              </div>
+              <div class="col-md-6 col-md-6">
+                <div class="card card-content">
+                  {{divlist.10| safe }}
+                  {{scriptlist.10| safe}} 
+                </div>
+              </div>
+            </div>
+            <div class = "row d-flex justify-content-center">
+                {{divlist.9| safe }}
+                {{scriptlist.9| safe}}
+              <div class="col-sm-4 col-sm-4 col-sm-4 ">
+                <div class="card card-stats text-white" style = " background-color: #03497D;">
+                  <div class="card-header ">
+                    <p class="card-category"><span class = "text-white">Products Info</span></p>
+                    <h4 class="card-title text-white">Total number of: {{products}} units</h4>
+                    <h4 class="card-title text-white">Average price: {{avgprice}}$ </h4>
+                  </div>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div class = "row d-flex justify-content-center">
+                {{divlist.7| safe }}
+                {{scriptlist.7| safe}}
+            </div>
+            <div class = "row d-flex justify-content-center mt-4">
+                {{divlist.11| safe }}
+                {{scriptlist.11| safe}}
+            </div>
+
+          {% endif %}
       
     {% comment %} write within its wrapper {% endcomment %}
 {% endblock content %}

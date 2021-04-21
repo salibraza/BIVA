@@ -218,7 +218,7 @@ group by c.category, c.subcategory;
 
 ## Considering category 'Furniture'
 #34
-select c.category, count(*) prodcuts_count, avg(p.unit_price) average_product_price from category_dim c
+select c.category, count(*) prodcuts_count, format(avg(p.unit_price),2) average_product_price from category_dim c
 inner join product_dim p on p.category_id = c.category_id
 where c.category = 'Furniture'
 group by c.category;
@@ -243,8 +243,8 @@ order by category, day) b on a.day = b.day;
 #36
 select a.month month_q1, a.revenue revenue_q1, 
 b.month month_q2, b.revenue revenue_q2, 
-c.month month_q3, b.revenue revenue_q3,
-a.month month_q4, a.revenue revenue_q4 from  
+c.month month_q3, c.revenue revenue_q3,
+d.month month_q4, d.revenue revenue_q4 from  
 (select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
 where  year = 2014 and quarter = 1 and category = 'Furniture' 
 group by pj.month order by pj.month) a 
@@ -260,6 +260,27 @@ inner join
 (select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
 where  year = 2014 and quarter = 4 and category = 'Furniture'
 group by pj.month order by pj.month) d on c.m = d.m; 
+
+select 'Quarter 1' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=1 and category = 'Furniture') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=2 and category = 'Furniture') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=3 and category = 'Furniture') m3
+union 
+select 'Quarter 2' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=4 and category = 'Furniture') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=5 and category = 'Furniture') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=6 and category = 'Furniture') m3
+union
+select 'Quarter 3' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=7 and category = 'Furniture') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=8 and category = 'Furniture') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=9 and category = 'Furniture') m3
+union
+select 'Quarter 4' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=10 and category = 'Furniture') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=11 and category = 'Furniture') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=12 and category = 'Furniture') m3;
+
 
 #37
 select a.mname month, a.quantity this_year, b.quantity prev_year from
@@ -283,11 +304,12 @@ group by l.market;
 
 ## Considering category 'Furnishings'
 #39
-select year, month, sum(quantity) quantity from pj_sales_category_date
+select convert(year, char) year, monthname(date) months, convert(sum(quantity),unsigned) quantity from pj_sales_category_date
+where subcategory = 'Furnishings'
 group by year, month order by year, month;
 
 #40
-select c.subcategory, count(*) prodcuts_count, avg(p.unit_price) average_product_price from category_dim c
+select c.subcategory, count(*) prodcuts_count, format(avg(p.unit_price),2) average_product_price from category_dim c
 inner join product_dim p on p.category_id = c.category_id
 where c.subcategory = 'Furnishings'
 group by c.subcategory;
@@ -310,25 +332,25 @@ group by subcategory, day
 order by subcategory, day) b on a.day = b.day;
 
 #42
-select a.month month_q1, a.revenue revenue_q1, 
-b.month month_q2, b.revenue revenue_q2, 
-c.month month_q3, b.revenue revenue_q3,
-a.month month_q4, a.revenue revenue_q4 from  
-(select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
-where  year = 2014 and quarter = 1 and subcategory = 'Furnishings' 
-group by pj.month order by pj.month) a 
-inner join 
-(select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
-where  year = 2014 and quarter = 2 and subcategory = 'Furnishings'
-group by pj.month order by pj.month) b on a.m = b.m 
-inner join 
-(select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
-where  year = 2014 and quarter = 3 and subcategory = 'Furnishings'
-group by pj.month order by pj.month) c on b.m = c.m 
-inner join 
-(select mod(pj.month,3) m, monthname(date) month, sum(profit) revenue from pj_sales_category_date pj
-where  year = 2014 and quarter = 4 and subcategory = 'Furnishings'
-group by pj.month order by pj.month) d on c.m = d.m; 
+select 'Quarter 1' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=1 and subcategory = 'Furnishings') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=2 and subcategory = 'Furnishings') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=3 and subcategory = 'Furnishings') m3
+union 
+select 'Quarter 2' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=4 and subcategory = 'Furnishings') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=5 and subcategory = 'Furnishings') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=6 and subcategory = 'Furnishings') m3
+union
+select 'Quarter 3' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=7 and subcategory = 'Furnishings') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=8 and subcategory = 'Furnishings') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=9 and subcategory = 'Furnishings') m3
+union
+select 'Quarter 4' as Quarter, 
+(select sum(profit) from pj_sales_category_date where year=2014 and month=10 and subcategory = 'Furnishings') m1,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=11 and subcategory = 'Furnishings') m2,
+(select sum(profit) from pj_sales_category_date where year=2014 and month=12 and subcategory = 'Furnishings') m3;
 
 #43
 select a.mname month, a.quantity this_year, b.quantity prev_year from
@@ -350,7 +372,7 @@ inner join sales_fact s on p.product_id = s.product_id
 inner join location_dim l on s.location_id = l.location_id
 group by l.market;
 #45
-(select pj.year, l.country, sum(quantity) quantity from pj_sales_category_date pj 
+(select convert(pj.year,char) year, l.country, sum(quantity) quantity from pj_sales_category_date pj 
 inner join location_dim l on pj.location_id = l.location_id 
 where pj.subcategory = 'Furnishings' and pj.year = 2011 
 group by l.country order by quantity desc limit 10) 
@@ -491,7 +513,7 @@ order by profit desc) a;
 ## Classified Results
 select ld.region, ld.country, cd.segment, c.subcategory, pd.product_id, 
 if((sum(profit)/4)<0,'Loss', if((sum(profit)/4)<1000,'GP','HP')) profit, 
-if((sum(quantity)/4)<10,'Low','Good') quantity
+if((sum(quantity)/4)<10,'Low','Good') quantity, count(*) transactions 
 from customer_dim cd inner join sales_fact sf on cd.customer_id = sf.customer_id
 inner join location_dim ld on ld.location_id = sf.location_id
 inner join product_dim pd on pd.product_id = sf.product_id

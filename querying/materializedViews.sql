@@ -84,3 +84,14 @@ inner join (select s.order_id, p.product_name from sales_fact s
 inner join product_dim p on s.product_id = p.product_id) b on a.order_id = b.order_id 
 where a.product_name != b.product_name
 group by a.product_name, b.product_name) c on c.product1 = p.product1 and c.product2 = p.product2;
+
+## Progress Calculator View
+create table progress_calc_view 
+select ld.region, ld.country, cd.segment, c.subcategory, pd.product_id, 
+if((sum(profit)/4)<0,'Loss', if((sum(profit)/4)<1000,'GP','HP')) profit, 
+if((sum(quantity)/4)<10,'Low','Good') quantity, count(*) transactions 
+from customer_dim cd inner join sales_fact sf on cd.customer_id = sf.customer_id
+inner join location_dim ld on ld.location_id = sf.location_id
+inner join product_dim pd on pd.product_id = sf.product_id
+inner join category_dim c on c.category_id = pd.category_id 
+group by ld.country, cd.segment, c.subcategory, pd.product_id;

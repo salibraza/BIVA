@@ -1,8 +1,94 @@
 {% extends 'block.html' %}
 {% block content %}
-
-
-
+    <div class = "row d-flex justify-content-center">
+        <div class="col-md-8">
+              <div class="card" >
+                <div class="card-header card-header-primary" >
+                  <h4 class="card-title">Decision Support</h4>
+                  <p class="card-category">Make a Decision</p>
+                </div>
+                <div class="card-body">
+                  <form method = 'POST' action="decision">
+                    {% csrf_token %}
+                    <div class="row">
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating">Country*</label>
+                          <input type="text" class="form-control" name = "first" required>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group">
+                          <label class="bmd-label-floating" >Subcategory*</label>
+                          <input type="text" class="form-control" name = "secound" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col-md-12">
+                        <div class="form-group">
+                          <label class="bmd-label-floating" >Segment</label>
+                          <input type="text" class="form-control" name = "segment">
+                        </div>
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary pull-right">Get Decision</button>
+                    <div class="clearfix"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+    </div>
+    {% if decisioncard %}
+    <div class = "row d-flex justify-content-center">
+        <div class="col-md-6 col-md-6">
+                <div class="card card-stats " style = " background-color: #F29722;">
+                  <div class="card-header ">
+                   <p class="card-category"><span class = "text-white">Profit Predictions</span></p>
+                   <h3 class="card-title text-white">Chances of high profit: {{highprofit}} %</h3>
+                   <h3 class="card-text text-white">Chances of good Profit: {{goodprofit}} % </h3>
+                   <h3 class="card-text text-white">Chances of loss: {{loss}} % </h3>
+                  </div>
+                  <div class="card-footer">
+                    <div class="stats">
+                      <p class="card-category text-white">High Profit is more than 1000$ per annum</p>
+                    </div>
+                    <div class="stats">
+                    <p class="card-category text-white">Good Profit is less than 1000$ per annum</p>
+                    </div>
+                    <div class="stats">
+                    <p class="card-category text-white">Loss is less than 0$ per annum</p>
+                    </div>
+                  </div>
+                </div>
+        </div>
+        <div class="col-md-6 col-md-6">
+                <div class="card card-stats " style = " background-color: #F29722;">
+                  <div class="card-header ">
+                   <p class="card-category"><span class = "text-white">Quantity Predictions </span></p>
+                   <h3 class="card-text text-white">Chances of good quantity: {{goodquantity}} % </h3>
+                   <h3 class="card-text text-white">Chances of low quantity: {{lowquantity}} % </h3>
+                  </div>
+                  <div class="card-footer">
+                    <div class="stats">
+                      <p class="card-category text-white">High Quantity is more than 10 items per annum</p>
+                    </div>
+                    <div class="stats">
+                    <p class="card-category text-white">Low Quantity is less than 10 items per annum</p>
+                    </div>
+                  </div>
+                </div>
+        </div>
+    </div>
+    <div class = "row d-flex justify-content-center">
+        <i>Result set are obtained form {{dataset}} number of recorded transactions</i>
+    </div>
+    {% endif %}
+    {% if noresult %}
+        <div class = "row d-flex justify-content-center">
+            <i>no result set found</i>
+        </div>
+    {% endif %}
 {% endblock content %}
 
 
