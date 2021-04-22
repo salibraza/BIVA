@@ -51,13 +51,13 @@
                   </div>
                   <div class="card-footer">
                     <div class="stats">
-                      <p class="card-category text-white">High Profit is more than 1000$ per annum</p>
+                      <p class="card-category text-white">High Profit > 1000$ per annum</p>
                     </div>
                     <div class="stats">
-                    <p class="card-category text-white">Good Profit is less than 1000$ per annum</p>
+                    <p class="card-category text-white">Good Profit < 1000$ per annum</p>
                     </div>
                     <div class="stats">
-                    <p class="card-category text-white">Loss is less than 0$ per annum</p>
+                    <p class="card-category text-white">Loss < 0$ per annum</p>
                     </div>
                   </div>
                 </div>
@@ -71,10 +71,10 @@
                   </div>
                   <div class="card-footer">
                     <div class="stats">
-                      <p class="card-category text-white">High Quantity is more than 10 items per annum</p>
+                      <p class="card-category text-white">High Quantity > 10 items per annum</p>
                     </div>
                     <div class="stats">
-                    <p class="card-category text-white">Low Quantity is less than 10 items per annum</p>
+                    <p class="card-category text-white">Low Quantity < 10 items per annum</p>
                     </div>
                   </div>
                 </div>
@@ -86,7 +86,7 @@
     {% endif %}
     {% if noresult %}
         <div class = "row d-flex justify-content-center">
-            <i>no result set found</i>
+            <i>No transaction history found</i>
         </div>
     {% endif %}
 {% endblock content %}
