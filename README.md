@@ -28,7 +28,7 @@ create materialized views used in analysis
 all the analytical processing queries used are contained in querying/queries.sql
 
 ### Django Web Project
-The crm folder in project folder contains django project. Following libraries in python virtual environment are needed to be installed to 
+The crm folder in project folder contains django project.For making a design consistent and clean we have used google material design in it as well. Following libraries in python virtual environment are needed to be installed to 
 run the django project.
 ##### Bokeh
 	pip install bokeh
