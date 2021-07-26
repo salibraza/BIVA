@@ -1,6 +1,8 @@
 # BIVA-Bussiness Insight and Visualization Assistant
+It is a web-based portal dedicated to data analysis and visualization, based on the data warehouse of a superstore
+
 ### Load Raw transactional data into Database
-1)import transactionsDump.sql in a mysql connection
+1)import DB/transactionsDump.sql in a mysql connection
 it'll create a schema with raw data tables and popullate them with data 
 **Data source** : *https://data.world/irvinpalacios21/final-data-set-global-sales/workspace/file?filename=Global+Superstore.xls*
 **MySQL is used for all the database creation and management is** 
@@ -19,12 +21,22 @@ The first approach was originally used to create the warehouse dump mentioned in
 to use warehouseDump.ddl to directly import ready-to-use warehouse database.
 
 ### Create Materialized Views
-Run materializedViews.sql in the same schema as the warehouse to
+Run querying/materializedViews.sql in the same schema as the warehouse to
 create materialized views used in analysis
 
-### Data Visuals
-groupVbar.py, multiVbarchar.py, pie.py and templateplots.py contains
-codes plots different figures required for analysis
-
 ### OLAP
-all the analytical processing queries used are contained in queries.sql
+all the analytical processing queries used are contained in querying/queries.sql
+
+### Django Web Project
+The crm folder in project folder contains django project. Following libraries in python virtual environment are needed to be installed to 
+run the django project.
+##### Bokeh
+	pip install bokeh
+##### NetworkX
+	pip install networkx
+##### Pandas
+	pip install pandas
+##### Mysql-Connector 
+	pip install mysql-connector-python
+##### Numpy
+	pip install numpy
